@@ -5,18 +5,23 @@ classdef parameters
     properties
         k
         b
+        kc
+        bc
         mu
         mP
         mT
     end
     
     methods
-        function obj = parameters(springConst, dampingRatio, ...
+        function obj = parameters(tetherSpringConst, tetherDampingRatio, ...
+                trussSpringConst, trussDampingRatio, ...
                 gravitationalParameter, massPayload, massTruss)
             %PARAMETERS Construct an instance of this class
             %   Detailed explanation goes here
-            obj.k = springConst;
-            obj.b = dampingRatio;
+            obj.k = tetherSpringConst;
+            obj.b = tetherDampingRatio;
+            obj.kc = trussSpringConst;
+            obj.bc = trussDampingRatio;
             obj.mu = gravitationalParameter;
             obj.mP = massPayload;
             obj.mT = massTruss;
