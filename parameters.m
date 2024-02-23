@@ -8,14 +8,12 @@ classdef parameters
         kc
         bc
         mu
-        mP
-        mT
     end
     
     methods
         function obj = parameters(tetherSpringConst, tetherDampingRatio, ...
                 trussSpringConst, trussDampingRatio, ...
-                gravitationalParameter, massPayload, massTruss)
+                gravitationalParameter)
             %PARAMETERS Construct an instance of this class
             %   Detailed explanation goes here
             obj.k = tetherSpringConst;
@@ -23,8 +21,6 @@ classdef parameters
             obj.kc = trussSpringConst;
             obj.bc = trussDampingRatio;
             obj.mu = gravitationalParameter;
-            obj.mP = massPayload;
-            obj.mT = massTruss;
         end
     end
 end
