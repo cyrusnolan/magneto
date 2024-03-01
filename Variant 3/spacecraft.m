@@ -3,14 +3,7 @@ classdef spacecraft
     %   Detailed explanation goes here
     
     properties
-        d0
-        l0
-        de
-        re
-        ma
-        mb
-        md
-        me
+        parameters
         BWc0
         BRac0
         BRbc0
@@ -20,45 +13,46 @@ classdef spacecraft
         BVbc0
         BVdc0
         BVec0
+        tether_equilibrium
+        truss_equilibrium
         simout
     end
     
     methods
-        function obj = spacecraft(payloadRadius, massPayload, ...
-                trussLength, massTruss, spacecraftAngularVelocity)
+        function obj = spacecraft(parameters)
             %PARAMETERS Construct an instance of this class
             %   Detailed explanation goes here
-            obj.d0 = trussLength/2;
-            obj.l0 = sqrt(payloadRadius^2+obj.d0^2);
-            obj.ma = massPayload/2;
-            obj.mb = massPayload/2;
-            obj.md = massTruss/6;
-            obj.me = massTruss/6;
-            b1 = [1;0;0]; b3 = [0;0;1]; % basis vectors
-            obj.BWc0 = spacecraftAngularVelocity*b3;
-            obj.BRac0 = payloadRadius*b1;
-            obj.BRbc0 = -payloadRadius*b1;
-            obj.BRdc0 = obj.d0*b3;
-            obj.BRec0 = -obj.d0*b3;
+            b1 = [1;0;0]; % basis vectors
+            b2 = [0;1;0];
+            b3 = [0;0;1];
+            obj.parameters = parameters;
+            obj.BWc0 = parameters.w*b3;
+            obj.BRac0 = 1*b1;
+            obj.BRbc0 = -1*b1;
+            obj.BRdc0 = parameters.d0*b3;
+            obj.BRec0 = -parameters.d0*b3;
             obj.BVac0 = cross(obj.BWc0,obj.BRac0);
             obj.BVbc0 = cross(obj.BWc0,obj.BRbc0);
             obj.BVdc0 = zeros(3,1);
             obj.BVec0 = zeros(3,1);
         end
 
-        % function obj = getEquilibrium(obj, params)
-        %     syms deq req
-        %     we = norm(obj.BWc0);
-        %     k = params.k;
-        %     b = params.b;
-        %     kc = params.kc;
-        %     bc = params.bc;
-        %     ma = params.ma;
-        %     md = params.md;
-        %     eqn1 = 2*k*(sqrt(req^2+deq^2)-obj.l0)*req/obj.l0 == ma*we^2*req;
-        %     eqn2 = 2*k*(sqrt(req^2+deq^2)-obj.l0)*deq/obj.l0 == md*we^2*deq+2*kc*(deq-obj.d0);
-        % 
-        % end
+        function obj = equilibrium(obj)
+            k = obj.parameters.k;            % tether spring constant
+            kc = obj.parameters.kc;          % truss spring constant
+            l0 = obj.parameters.l0;          % tether rest length
+            d0 = obj.parameters.d0;          % half truss rest length
+            ma = obj.parameters.ma;          % mass of any indiviudal payload mass
+            md = obj.parameters.md;          % mass of the truss
+            w = obj.parameters.w;            % spacecraft equilibrium angular velocity
+            sys_eqn = @(x) [2*k*(x(1) - l0)*sqrt(x(1)^2 - x(2)^2)/x(1) - ma*w^2*sqrt(x(1)^2 - x(2)^2);
+                            2*k*(x(1) - l0)*x(2)/x(1) + kc*(2*x(2) - 2*d0) - md*w^2*x(2)];
+            x0 = [l0; d0];
+            solution = fsolve(sys_eqn, x0);
+            obj.tether_equilibrium = solution(1);
+            obj.truss_equilibrium = solution(2);
+
+        end
 
         function obj = sim(obj, stopTime, gravity, params, orbit)
             %METHOD1 Summary of this method goes here
@@ -118,7 +112,7 @@ classdef spacecraft
                 "NVbo0 = "+mat2str(NVbo0)+"; " + ...
                 "NVdo0 = "+mat2str(NVdo0)+"; " + ...
                 "NVeo0 = "+mat2str(NVeo0)+";";                     
-            model = "dynamics";
+            model = "v3_dynamics";
             load_system(model)
             set_param(model, 'PreloadFcn', varInit)
             save_system(model)
