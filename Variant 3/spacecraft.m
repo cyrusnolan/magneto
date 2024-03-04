@@ -3,66 +3,27 @@ classdef spacecraft
     %   Detailed explanation goes here
     
     properties
-        parameters
-        BWc0
-        BRac0
-        BRbc0
-        BRdc0
-        BRec0
-        BVac0
-        BVbc0
-        BVdc0
-        BVec0
-        tether_equilibrium
-        truss_equilibrium
+        p                           % parameters
+        BX                          % state vector in B coordinates
+        tether_equilibrium          % tether equilibrium length given initial angular velocity
+        truss_equilibrium           % truss equilibrium length given intial angular velocity
         simout
     end
     
     methods
-        function obj = spacecraft(parameters)
-            %PARAMETERS Construct an instance of this class
-            %   Detailed explanation goes here
-            b1 = [1;0;0]; % basis vectors
-            b2 = [0;1;0];
-            b3 = [0;0;1];
-            obj.parameters = parameters;
-            obj.BWc0 = parameters.w*b3;
-            obj.BRac0 = 1*b1;
-            obj.BRbc0 = -1*b1;
-            obj.BRdc0 = parameters.d0*b3;
-            obj.BRec0 = -parameters.d0*b3;
-            obj.BVac0 = cross(obj.BWc0,obj.BRac0);
-            obj.BVbc0 = cross(obj.BWc0,obj.BRbc0);
-            obj.BVdc0 = zeros(3,1);
-            obj.BVec0 = zeros(3,1);
+        function obj = spacecraft(parameters, BX)
+            obj.p = parameters;
+            obj.BX = BX;
         end
 
-        function obj = equilibrium(obj)
-            k = obj.parameters.k;            % tether spring constant
-            kc = obj.parameters.kc;          % truss spring constant
-            l0 = obj.parameters.l0;          % tether rest length
-            d0 = obj.parameters.d0;          % half truss rest length
-            ma = obj.parameters.ma;          % mass of any indiviudal payload mass
-            md = obj.parameters.md;          % mass of the truss
-            w = obj.parameters.w;            % spacecraft equilibrium angular velocity
-            sys_eqn = @(x) [2*k*(x(1) - l0)*sqrt(x(1)^2 - x(2)^2)/x(1) - ma*w^2*sqrt(x(1)^2 - x(2)^2);
-                            2*k*(x(1) - l0)*x(2)/x(1) + kc*(2*x(2) - 2*d0) - md*w^2*x(2)];
-            x0 = [l0; d0];
-            solution = fsolve(sys_eqn, x0);
-            obj.tether_equilibrium = solution(1);
-            obj.truss_equilibrium = solution(2);
-
-        end
-
-        function obj = sim(obj, stopTime, gravity, params, orbit)
+        function obj = sim(obj, stopTime, orbit, gravity)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             arguments
                 obj
                 stopTime {mustBePositive,mustBeReal,mustBeNumeric}
-                gravity {mustBeA(gravity,"logical")}
-                params {mustBeA(params,"parameters")}
                 orbit {mustBeA(orbit,"orbit")}
+                gravity {mustBeA(gravity,"logical")} = true
             end
             NRco0 = orbit.NR;
             NVco0 = orbit.NV;
@@ -71,14 +32,14 @@ classdef spacecraft
             Nb3 = Nh_orbit/norm(Nh_orbit);
             Nb1 = cross(Nb2,Nb3);
             NQB = [Nb1 Nb2 Nb3];
-            NRac0 = NQB*obj.BRac0;
-            NRbc0 = NQB*obj.BRbc0;
-            NRdc0 = NQB*obj.BRdc0;
-            NRec0 = NQB*obj.BRec0;
-            NVac0 = NQB*obj.BVac0;
-            NVbc0 = NQB*obj.BVbc0;
-            NVdc0 = NQB*obj.BVdc0;
-            NVec0 = NQB*obj.BVec0;
+            NRac0 = NQB*obj.BX.BRac0;
+            NRbc0 = NQB*obj.BX.BRbc0;
+            NRdc0 = NQB*obj.BX.BRdc0;
+            NRec0 = NQB*obj.BX.BRec0;
+            NVac0 = NQB*obj.BX.BVac0;
+            NVbc0 = NQB*obj.BX.BVbc0;
+            NVdc0 = NQB*obj.BX.BVdc0;
+            NVec0 = NQB*obj.BX.BVec0;
             NRao0 = NRac0+NRco0;
             NRbo0 = NRbc0+NRco0;
             NRdo0 = NRdc0+NRco0;
@@ -89,21 +50,17 @@ classdef spacecraft
             NVeo0 = NVec0+NVco0;
             varInit = "StopTime = "+stopTime+"; " + ...
                 "gravity = "+gravity+"; " + ...
-                "k = "+params.k+"; " + ...
-                "b = "+params.b+"; " + ...
-                "kc = "+params.kc+"; " + ...
-                "bc = "+params.bc+"; " + ...
-                "d0 = "+obj.d0+"; " + ...
-                "l0 = "+obj.l0+"; " + ...
-                "mu = "+params.mu+"; " + ...
-                "ma = "+obj.ma+"; " + ...
-                "ma_inv = "+1/obj.ma+"; " + ...
-                "mb = "+obj.mb+"; " + ...
-                "mb_inv = "+1/obj.mb+"; " + ...
-                "md = "+obj.md+"; " + ...
-                "md_inv = "+1/obj.md+"; " + ...
-                "me = "+obj.me+"; " + ...
-                "me_inv = "+1/obj.me+"; " + ...
+                "k = "+obj.p.k+"; " + ...
+                "b = "+obj.p.b+"; " + ...
+                "kc = "+obj.p.kc+"; " + ...
+                "bc = "+obj.p.bc+"; " + ...
+                "d0 = "+obj.p.d0+"; " + ...
+                "l0 = "+obj.p.l0+"; " + ...
+                "mu = "+obj.p.mu+"; " + ...
+                "mp = "+obj.p.mp+"; " + ...
+                "mp_inv = "+1/obj.p.mp+"; " + ...
+                "mtr = "+obj.p.mtr+"; " + ...
+                "mtr_inv = "+1/obj.p.mtr+"; " + ...
                 "NRao0 = "+mat2str(NRao0)+"; " + ...
                 "NRbo0 = "+mat2str(NRbo0)+"; " + ...
                 "NRdo0 = "+mat2str(NRdo0)+"; " + ...
@@ -112,7 +69,7 @@ classdef spacecraft
                 "NVbo0 = "+mat2str(NVbo0)+"; " + ...
                 "NVdo0 = "+mat2str(NVdo0)+"; " + ...
                 "NVeo0 = "+mat2str(NVeo0)+";";                     
-            model = "v3_dynamics";
+            model = "dynamics";
             load_system(model)
             set_param(model, 'PreloadFcn', varInit)
             save_system(model)
@@ -176,10 +133,10 @@ classdef spacecraft
             NVdc = obj.simout.NVdc;
             NVec = obj.simout.NVec;
             for i=length(NRac):-1:1
-                Hac = obj.ma*cross(NRac(i,:),NVac(i,:));
-                Hbc = obj.mb*cross(NRbc(i,:),NVbc(i,:));
-                Hdc = obj.md*cross(NRdc(i,:),NVdc(i,:));
-                Hec = obj.me*cross(NRec(i,:),NVec(i,:));
+                Hac = obj.p.mp*cross(NRac(i,:),NVac(i,:));
+                Hbc = obj.p.mp*cross(NRbc(i,:),NVbc(i,:));
+                Hdc = obj.p.mtr*cross(NRdc(i,:),NVdc(i,:));
+                Hec = obj.p.mtr*cross(NRec(i,:),NVec(i,:));
                 hc(i) = norm(Hac+Hbc+Hdc+Hec);
             end
             ax = axes();

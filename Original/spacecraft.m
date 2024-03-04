@@ -46,19 +46,22 @@ classdef spacecraft
             obj.BVec0 = zeros(3,1);
         end
 
-        % function obj = getEquilibrium(obj, params)
-        %     syms deq req
-        %     we = norm(obj.BWc0);
-        %     k = params.k;
-        %     b = params.b;
-        %     kc = params.kc;
-        %     bc = params.bc;
-        %     ma = params.ma;
-        %     md = params.md;
-        %     eqn1 = 2*k*(sqrt(req^2+deq^2)-obj.l0)*req/obj.l0 == ma*we^2*req;
-        %     eqn2 = 2*k*(sqrt(req^2+deq^2)-obj.l0)*deq/obj.l0 == md*we^2*deq+2*kc*(deq-obj.d0);
-        % 
-        % end
+        function obj = equilibrium(obj)
+            k = obj.parameters.k;            % tether spring constant
+            kc = obj.parameters.kc;          % truss spring constant
+            l0 = obj.parameters.l0;          % tether rest length
+            d0 = obj.parameters.d0;          % half truss rest length
+            ma = obj.parameters.ma;          % mass of any indiviudal payload mass
+            md = obj.parameters.md;          % mass of the truss
+            w = obj.parameters.w;            % spacecraft equilibrium angular velocity
+            sys_eqn = @(x) [2*k*(x(1) - l0)*sqrt(x(1)^2 - x(2)^2)/x(1) - ma*w^2*sqrt(x(1)^2 - x(2)^2);
+                            2*k*(x(1) - l0)*x(2)/x(1) + kc*(2*x(2) - 2*d0) - md*w^2*x(2)];
+            x0 = [l0; d0];
+            solution = fsolve(sys_eqn, x0);
+            obj.tether_equilibrium = solution(1);
+            obj.truss_equilibrium = solution(2);
+
+        end
 
         function obj = sim(obj, stopTime, gravity, params, orbit)
             %METHOD1 Summary of this method goes here

@@ -2,8 +2,6 @@ clc
 clear
 close all
 
-% initialize at equilibrium position and add expectation equilibrium to
-% plot() figures 1 and 2
 
 % parameters
 k_tether = 10;
