@@ -1,6 +1,6 @@
 function limits = getAxisLimits3(data)
-%GETAXISLIMITS Summary of this function goes here
-%   Detailed explanation goes here
+    %GETAXISLIMITS Summary of this function goes here
+    %   Detailed explanation goes here
     arguments
         data (:,3) {mustBeNumeric, mustBeReal}
     end
@@ -12,6 +12,5 @@ function limits = getAxisLimits3(data)
     zmin = min(data(:,3));
     zmax = max(data(:,3));
     limits = [xmin xmax ymin ymax zmin zmax];
-
 end
 

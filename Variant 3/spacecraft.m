@@ -3,64 +3,37 @@ classdef spacecraft
     %   Detailed explanation goes here
     
     properties
-        p                           % parameters
-        BX                          % state vector in B coordinates
+        p
+        NX
         simout
     end
     
     methods
-        function obj = spacecraft(parameters, BX)
-            obj.p = parameters;
-            obj.BX = BX;
+        function obj = spacecraft(p, NX)
+            arguments
+                p {mustBeA(p,"parameters")}
+                NX {mustBeA(NX,"state_vec_N")}
+            end
+            obj.p = p;
+            obj.NX = NX; 
         end
 
-        function obj = sim(obj, stopTime, orbit, gravity)
+        function obj = sim(obj, stopTime, gravity)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             arguments
                 obj
                 stopTime {mustBePositive,mustBeReal,mustBeNumeric}
-                orbit {mustBeA(orbit,"orbit")}
                 gravity {mustBeA(gravity,"logical")} = true
             end
-            model = obj.p.model;
-            NRco0 = orbit.NR;
-            NVco0 = orbit.NV;
-            Nh_orbit = orbit.Nh;
-            Nb2 = -NRco0/norm(NRco0);
-            Nb3 = Nh_orbit/norm(Nh_orbit);
-            Nb1 = cross(Nb2,Nb3);
-            NQB = [Nb1 Nb2 Nb3];
-            NRac0 = NQB*obj.BX.BRac0;
-            NRbc0 = NQB*obj.BX.BRbc0;
-            NRfc0 = NQB*obj.BX.BRfc0;
-            NRgc0 = NQB*obj.BX.BRgc0;
-            NRdc0 = NQB*obj.BX.BRdc0;
-            NRec0 = NQB*obj.BX.BRec0;
-            NVac0 = NQB*obj.BX.BVac0;
-            NVbc0 = NQB*obj.BX.BVbc0;
-            NVfc0 = NQB*obj.BX.BVfc0;
-            NVgc0 = NQB*obj.BX.BVgc0;
-            NVdc0 = NQB*obj.BX.BVdc0;
-            NVec0 = NQB*obj.BX.BVec0;
-            NRao0 = NRac0+NRco0;
-            NRbo0 = NRbc0+NRco0;
-            NRfo0 = NRfc0+NRco0;
-            NRgo0 = NRgc0+NRco0;
-            NRdo0 = NRdc0+NRco0;
-            NReo0 = NRec0+NRco0;
-            NVao0 = NVac0+NVco0;
-            NVbo0 = NVbc0+NVco0;
-            NVfo0 = NVfc0+NVco0;
-            NVgo0 = NVgc0+NVco0;
-            NVdo0 = NVdc0+NVco0;
-            NVeo0 = NVec0+NVco0;
+            config = obj.p.config;
+            model = "dynamics";
             varInit = "StopTime = "+stopTime+"; " + ...
                 "gravity = "+gravity+"; " + ...
                 "k = "+obj.p.k+"; " + ...
                 "b = "+obj.p.b+"; " + ...
-                "kc = "+obj.p.kc+"; " + ...
-                "bc = "+obj.p.bc+"; " + ...
+                "ktr = "+obj.p.ktr+"; " + ...
+                "btr = "+obj.p.btr+"; " + ...
                 "d0 = "+obj.p.d0+"; " + ...
                 "l0 = "+obj.p.l0+"; " + ...
                 "mu = "+obj.p.mu+"; " + ...
@@ -68,23 +41,36 @@ classdef spacecraft
                 "mp_inv = "+1/obj.p.mp+"; " + ...
                 "mtr = "+obj.p.mtr+"; " + ...
                 "mtr_inv = "+1/obj.p.mtr+"; " + ...
-                "NRao0 = "+mat2str(NRao0)+"; " + ...
-                "NRbo0 = "+mat2str(NRbo0)+"; " + ...
-                "NRfo0 = "+mat2str(NRfo0)+"; " + ...
-                "NRgo0 = "+mat2str(NRgo0)+"; " + ...
-                "NRdo0 = "+mat2str(NRdo0)+"; " + ...
-                "NReo0 = "+mat2str(NReo0)+"; " + ...
-                "NVao0 = "+mat2str(NVao0)+"; " + ...
-                "NVbo0 = "+mat2str(NVbo0)+"; " + ...
-                "NVfo0 = "+mat2str(NVfo0)+"; " + ...
-                "NVgo0 = "+mat2str(NVgo0)+"; " + ...
-                "NVdo0 = "+mat2str(NVdo0)+"; " + ...
-                "NVeo0 = "+mat2str(NVeo0)+";";                     
+                "NRao0 = "+mat2str(obj.NX.NRao0)+"; " + ...
+                "NRbo0 = "+mat2str(obj.NX.NRbo0)+"; " + ...
+                "NRdo0 = "+mat2str(obj.NX.NRdo0)+"; " + ...
+                "NReo0 = "+mat2str(obj.NX.NReo0)+"; " + ...
+                "NVao0 = "+mat2str(obj.NX.NVao0)+"; " + ...
+                "NVbo0 = "+mat2str(obj.NX.NVbo0)+"; " + ...
+                "NVdo0 = "+mat2str(obj.NX.NVdo0)+"; " + ...
+                "NVeo0 = "+mat2str(obj.NX.NVeo0)+"; ";                     
             load_system(model)
+            switch config
+                case "v1"
+                    set_param(model+"/Mass a", "Commented", "off")
+                    set_param(model+"/Mass b", "Commented", "off")
+                    set_param(model+"/Mass f", "Commented", "on")
+                    set_param(model+"/Mass g", "Commented", "on")
+                case "octahedron"
+                    set_param(model+"/Mass a", "Commented", "off")
+                    set_param(model+"/Mass b", "Commented", "off")
+                    set_param(model+"/Mass f", "Commented", "off")
+                    set_param(model+"/Mass g", "Commented", "off")
+                    varInit = varInit + ...
+                    "NRfo0 = "+mat2str(obj.NX.NRfo0)+"; " + ...
+                    "NRgo0 = "+mat2str(obj.NX.NRgo0)+"; " + ...
+                    "NVfo0 = "+mat2str(obj.NX.NVfo0)+"; " + ...
+                    "NVgo0 = "+mat2str(obj.NX.NVgo0)+"; ";
+            end
             set_param(model, 'PreloadFcn', varInit)
             save_system(model)
             close_system(model)
-            disp("Simulating model: " +model)
+            disp("Simulating configuration: " +config)
             obj.simout = sim(model+".slx");
         end
 
@@ -104,19 +90,45 @@ classdef spacecraft
             idxMaxDiff = find(diffMaxCond);
             idx0Diff = find(diff0Cond);
 
-            figure(1) % truss length (axes=axL) and tether length (axes=axR) vs time
+            if obj.p.config == "octahedron"
+                NRfo = obj.simout.NRfo;
+                NRgo = obj.simout.NRgo;
+                for i=length(NRfo):-1:1
+                    rfo = norm(NRfo(i,:));
+                    rgo = norm(NRgo(i,:));
+                    diff2(i) = rfo-rgo;
+                end
+                diffMinCond2 = [false, (diff2(2:end-1) > diff2(1:end-2)) & (diff2(2:end-1) > diff2(3:end)), false];
+                diffMaxCond2 = [false, (diff2(2:end-1) < diff2(1:end-2)) & (diff2(2:end-1) < diff2(3:end)), false];
+                diff0Cond2 = [false, (abs(diff2(2:end-1)) < abs(diff2(1:end-2))) & (abs(diff2(2:end-1)) < abs(diff2(3:end))), false];
+                idxMinDiff2 = find(diffMinCond2);
+                idxMaxDiff2 = find(diffMaxCond2);
+                idx0Diff2 = find(diff0Cond2);
+            end
+
+            figure() % truss length (axes=axL) and tether length (axes=axR) vs time
             axL = subplot(1,2,1);
             hold on
             t = obj.simout.tout;
             rde = obj.simout.rde;
             plot(axL,t,rde)
-            plot(axL,t(idxMinDiff),rde(idxMinDiff),'ro',LineWidth=2)
-            plot(axL,t(idxMaxDiff),rde(idxMaxDiff),'bo',LineWidth=2)
-            plot(axL,t(idx0Diff),rde(idx0Diff),'ko',LineWidth=2)
+            plot(axL,t(idxMinDiff),rde(idxMinDiff),'ro',LineWidth=1)
+            plot(axL,t(idxMaxDiff),rde(idxMaxDiff),'ro',LineWidth=1)
+            plot(axL,t(idx0Diff),rde(idx0Diff),'ko',LineWidth=1)
+            if obj.p.config == "octahedron"
+                plot(axL,t(idxMinDiff2),rde(idxMinDiff2),'bo',LineWidth=1)
+                plot(axL,t(idxMaxDiff2),rde(idxMaxDiff2),'bo',LineWidth=1)
+                plot(axL,t(idx0Diff2),rde(idx0Diff2),'mo',LineWidth=1)
+            end
             title("Distance between mass D and E (Truss Length) vs time")
             xlabel("t (s)")
             ylabel("truss length (m)")
-            legend('','local vertical alignment, payload a low','local vertical alignment, payload a high','local horizonal alignment')
+            if obj.p.config == "v1"
+                legend('','local vertical','','local horizonal')
+            elseif obj.p.config == "octahedron"
+                legend('','ab vertical','','ab horizonal','fg vertical','','fg horizontal')
+            end
+
             axR = subplot(1,2,2);
             hold on
             plot(axR,t,obj.simout.rad,'b')
@@ -147,21 +159,40 @@ classdef spacecraft
                 Hbc = obj.p.mp*cross(NRbc(i,:),NVbc(i,:));
                 Hdc = obj.p.mtr*cross(NRdc(i,:),NVdc(i,:));
                 Hec = obj.p.mtr*cross(NRec(i,:),NVec(i,:));
-                hc(i) = norm(Hac+Hbc+Hdc+Hec);
+                if obj.p.config == "octahedron"
+                    NRfc = obj.simout.NRfc;
+                    NRgc = obj.simout.NRgc;
+                    NVfc = obj.simout.NVfc;
+                    NVgc = obj.simout.NVgc;
+                    Hfc = obj.p.mp*cross(NRfc(i,:),NVfc(i,:));
+                    Hgc = obj.p.mp*cross(NRgc(i,:),NVgc(i,:));
+                    hc(i) = norm(Hac+Hbc+Hdc+Hec+Hfc+Hgc);
+                else
+                    hc(i) = norm(Hac+Hbc+Hdc+Hec);
+                end
             end
             axL = subplot(1,2,1);
             hold on
             plot(axL,t,hc);
             plot(axL,t(idxMinDiff),hc(idxMinDiff),'ro',LineWidth=2)
-            plot(axL,t(idxMaxDiff),hc(idxMaxDiff),'bo',LineWidth=2)
+            plot(axL,t(idxMaxDiff),hc(idxMaxDiff),'ro',LineWidth=2)
             plot(axL,t(idx0Diff),hc(idx0Diff),'ko',LineWidth=2)
+            if obj.p.config == "octahedron"
+                plot(axL,t(idxMinDiff2),hc(idxMinDiff2),'bo',LineWidth=1)
+                plot(axL,t(idxMaxDiff2),hc(idxMaxDiff2),'bo',LineWidth=1)
+                plot(axL,t(idx0Diff2),hc(idx0Diff2),'mo',LineWidth=1)
+            end
             title("Spacecraft angular momentum")
             xlabel("t (s)")
             ylabel("angular momentum (kg*m^2/s)")
-            legend('','local vertical alignment, a low','local vertical alignment, a high','local horizonal alignment')
+            if obj.p.config == "v1"
+                legend('','local vertical','','local horizonal')
+            elseif obj.p.config == "octahedron"
+                legend('','ab vertical','','ab horizonal','fg vertical','','fg horizontal')
+            end
             axR = subplot(1,2,2);
             plot(axR,t(idx0Diff),hc(idx0Diff),'k',LineWidth=2)
-            title("Spacecraft angular momentum at local horizontal")
+            title("Spacecraft angular momentum at each ab horizontal")
             xlabel("t (s)")
             ylabel("angular momentum (kg*m^2/s)")
 
@@ -205,7 +236,7 @@ classdef spacecraft
             NRdc = obj.simout.NRdc;
             NRec = obj.simout.NRec;
             NRco = obj.simout.NRco;
-            if obj.p.model == "dynamics_v2"
+            if obj.p.config == "octahedron"
                 NRfc = obj.simout.NRfc;
                 NRgc = obj.simout.NRgc;
             end
@@ -217,7 +248,7 @@ classdef spacecraft
             ylabel('Y')
             zlabel('Z')
             view(axL,3)
-            if obj.p.model == "dynamics"
+            if obj.p.config == "v1"
                 data = [NRac;NRbc;NRdc;NRec];
                 axis(getAxisLimits3(data))
             else
@@ -231,7 +262,7 @@ classdef spacecraft
             tether_bd = animatedline(axL);
             tether_be = animatedline(axL);
             truss_de = animatedline(axL);
-            if obj.p.model == "dynamics_v2"
+            if obj.p.config == "octahedron"
                 trace_f = animatedline(axL);
                 trace_g = animatedline(axL);
                 tether_fd = animatedline(axL);
@@ -259,7 +290,7 @@ classdef spacecraft
                 addpoints(tether_be,[NRec(i,1) NRbc(i,1)],[NRec(i,2) NRbc(i,2)],[NRec(i,3) NRbc(i,3)])
                 addpoints(truss_de,[NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)])
                 addpoints(truss_center,NRco(i,1),NRco(i,2),NRco(i,3))
-                if obj.p.model == "dynamics_v2"
+                if obj.p.config == "octahedron"
                     addpoints(trace_f,NRfc(i,1),NRfc(i,2),NRfc(i,3))
                     addpoints(trace_g,NRgc(i,1),NRgc(i,2),NRgc(i,3))
                     addpoints(tether_fd,[NRdc(i,1) NRfc(i,1)],[NRdc(i,2) NRfc(i,2)],[NRdc(i,3) NRfc(i,3)])
@@ -273,7 +304,7 @@ classdef spacecraft
                 clearpoints(tether_bd)
                 clearpoints(tether_be)
                 clearpoints(truss_de)
-                if obj.p.model == "dynamics_v2"
+                if obj.p.config == "octahedron"
                     clearpoints(tether_fd)
                     clearpoints(tether_fe)
                     clearpoints(tether_gd)
@@ -285,7 +316,7 @@ classdef spacecraft
             addpoints(tether_bd,[NRdc(end,1) NRbc(end,1)],[NRdc(end,2) NRbc(end,2)],[NRdc(end,3) NRbc(end,3)])
             addpoints(tether_be,[NRec(end,1) NRbc(end,1)],[NRec(end,2) NRbc(end,2)],[NRec(end,3) NRbc(end,3)])
             addpoints(truss_de,[NRdc(end,1) NRec(end,1)],[NRdc(end,2) NRec(end,2)],[NRdc(end,3) NRec(end,3)])
-            if obj.p.model == "dynamics_v2"
+            if obj.p.config == "octahedron"
                 addpoints(tether_fd,[NRdc(end,1) NRfc(end,1)],[NRdc(end,2) NRfc(end,2)],[NRdc(end,3) NRfc(end,3)])
                 addpoints(tether_fe,[NRec(end,1) NRfc(end,1)],[NRec(end,2) NRfc(end,2)],[NRec(end,3) NRfc(end,3)])
                 addpoints(tether_gd,[NRdc(end,1) NRgc(end,1)],[NRdc(end,2) NRgc(end,2)],[NRdc(end,3) NRgc(end,3)])
