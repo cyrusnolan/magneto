@@ -6,13 +6,13 @@ close all
 % 
 
 % BEGIN USER INPUT-----------------------------
-sim_stop_time = 5000;
-model = 'v1'; % {"v1", "octahedron"}
+sim_stop_time = 80000;
+model = 'octahedron'; % {"v1", "octahedron"}
 mu = 3.986e14;
 k_tether = 10;
 b_tether = 100;
-k_truss = 300;
-b_truss = 300;
+k_truss = 10;
+b_truss = 100;
 truss_length = 250;
 payload_radius = 500;
 mass_payload = 1500;
