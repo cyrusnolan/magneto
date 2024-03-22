@@ -14,9 +14,6 @@ classdef parameters
         mp
         mtr
         w
-        le
-        de
-        re
     end
     
     methods
@@ -49,23 +46,6 @@ classdef parameters
             obj.mp = massPayload;
             obj.mtr = massTruss/6;
             obj.w = initialAngularVelocity;
-            obj = setEquilibrium(obj);
-        end
-
-        function obj = setEquilibrium(obj)
-            switch obj.config
-                case "v1"
-                    numPayload = 2;
-                case "octahedron"
-                    numPayload = 4;
-            end
-            sys_eqn = @(x) [2*obj.k*(x(1) - obj.l0)*sqrt(x(1)^2 - x(2)^2)/x(1) - obj.mp*obj.w^2*sqrt(x(1)^2 - x(2)^2);
-                            numPayload*obj.k*(x(1) - obj.l0)*x(2)/x(1) + obj.ktr*(2*x(2) - 2*obj.d0)];
-            x0 = [obj.l0; obj.d0];
-            solution = fsolve(sys_eqn, x0);
-            obj.le = solution(1);
-            obj.de = solution(2);
-            obj.re = sqrt(obj.le^2 - obj.de^2);
         end
     end
 end

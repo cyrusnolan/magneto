@@ -3,10 +3,11 @@ clear
 close all
 
 % TODO
-% 
+% change some/all angular mom plots to normalized by initial value
+% remove parameter config - deprecated
 
 % BEGIN USER INPUT-----------------------------
-sim_stop_time = 80000;
+sim_stop_time = 120000;
 model = 'octahedron'; % {"v1", "octahedron"}
 mu = 3.986e14;
 k_tether = 10;
@@ -30,15 +31,12 @@ true_anomaly = pi/2;
 p = parameters(model, mu, k_tether, b_tether, k_truss, b_truss, truss_length, payload_radius, ...
     mass_payload, mass_truss, omega0);
 
-% determine initial state vector in body coordinates
-BX = state_vec_B(p);
-
 % initialize orbit
 orbit = orbit(mu,semi_major_axis,eccentricity,inclination, ...
     arugment_of_periapsis,lon_ascending_node,true_anomaly);
 
 % determine initial state vector in inertial coordinates
-NX = state_vec_N(BX, orbit);
+NX = state_vec_N(p, orbit);
 
 % initialize spacecraft
 sc = spacecraft(p, NX);
