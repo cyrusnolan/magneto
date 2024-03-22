@@ -28,7 +28,7 @@ classdef state_vec_N
             b1 = [1;0;0]; % basis vectors
             b2 = [0;1;0];
             b3 = [0;0;1];
-            BWc0 = -p.w*b3;
+            BWc0 = p.w*b3;
             BRac0 = rp*b1;
             BRbc0 = -rp*b1;
             BRfc0 = rp*b2;

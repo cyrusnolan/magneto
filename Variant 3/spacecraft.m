@@ -34,8 +34,11 @@ classdef spacecraft
                 "b = "+obj.p.b+"; " + newline + ...
                 "ktr = "+obj.p.ktr+"; " + newline + ...
                 "btr = "+obj.p.btr+"; " + newline + ...
+                "ks = "+obj.p.ks+"; " + newline + ...
+                "bs = "+obj.p.bs+"; " + newline + ...
                 "d0 = "+obj.p.d0+"; " + newline + ...
                 "l0 = "+obj.p.l0+"; " + newline + ...
+                "ls0 = "+obj.p.ls0+"; " + newline + ...
                 "mu = "+obj.p.mu+"; " + newline + ...
                 "mp = "+obj.p.mp+"; " + newline + ...
                 "mp_inv = "+1/obj.p.mp+"; " + newline + ...
@@ -113,9 +116,9 @@ classdef spacecraft
             idx_lh = find(diff0Cond);
         end
 
-        function [HGo, HG, Ho] = getAngularMom(obj)
-            % HG = angular momentum of spacecraft about its center of mass
+        function [HGo, HG, Ho, HGo_norm, HG_norm, Ho_norm] = getAngularMom(obj)
             % HGo = angular momentum of spacecraft center of mass about Earth's center
+            % HG = angular momentum of spacecraft about its center of mass
             % Ho = total angular momentum of spacecraft about Earth's center
             mp = obj.p.mp;
             mtr = obj.p.mtr;
@@ -146,22 +149,67 @@ classdef spacecraft
             NVgG = NVgo - NVGo;
             NVdG = NVdo - NVGo;
             NVeG = NVeo - NVGo;
+
+            HGo = NRao*0;
+            HG = HGo;
+            Ho = HGo;
             for i=length(NRao):-1:1
-                HGo(i) = totalMass*norm(cross(NRGo(i,:), NVGo(i,:)));
+                HGo(i,:) = totalMass*(cross(NRGo(i,:), NVGo(i,:)));
+                HGo_norm(i) = norm(HGo(i,:));
                 HaG = mp*cross(NRaG(i,:), NVaG(i,:));
                 HbG = mp*cross(NRbG(i,:), NVbG(i,:));
                 HfG = mp*cross(NRfG(i,:), NVfG(i,:));
                 HgG = mp*cross(NRgG(i,:), NVgG(i,:));
                 HdG = mtr*cross(NRdG(i,:),NVdG(i,:));
                 HeG = mtr*cross(NReG(i,:),NVeG(i,:));
-                HG(i) = norm(HaG + HbG + HfG + HgG + HdG + HeG);
+                HG(i,:) = HaG + HbG + HfG + HgG + HdG + HeG;
+                HG_norm(i) = norm(HG(i,:));
                 Hao = mp*cross(NRao(i,:), NVao(i,:));
                 Hbo = mp*cross(NRbo(i,:), NVbo(i,:));
                 Hfo = mp*cross(NRfo(i,:), NVfo(i,:));
                 Hgo = mp*cross(NRgo(i,:), NVgo(i,:));
                 Hdo = mtr*cross(NRdo(i,:), NVdo(i,:));
                 Heo = mtr*cross(NReo(i,:), NVeo(i,:));
-                Ho(i) = norm(Hao + Hbo + Hfo + Hgo + Hdo + Heo);
+                Ho(i,:) = Hao + Hbo + Hfo + Hgo + Hdo + Heo;
+                Ho_norm(i) = norm(Ho(i,:));
+            end
+        end
+
+        function [a, e, incl, W] = getOrbitalElements(obj)
+            NRao = obj.simout.NRao;
+            NRbo = obj.simout.NRbo;
+            NRfo = obj.simout.NRfo;
+            NRgo = obj.simout.NRgo;
+            NRdo = obj.simout.NRdo;
+            NReo = obj.simout.NReo;
+            NVao = obj.simout.NVao;
+            NVbo = obj.simout.NVbo;
+            NVfo = obj.simout.NVfo;
+            NVgo = obj.simout.NVgo;
+            NVdo = obj.simout.NVdo;
+            NVeo = obj.simout.NVeo;
+            mp = obj.p.mp;
+            mtr = obj.p.mtr;
+            totalMass = 4*mp + 2*mtr;
+            Nr = (mp*(NRao + NRbo + NRfo + NRgo) + mtr*(NRdo + NReo))/totalMass;
+            Nv = (mp*(NVao + NVbo + NVfo + NVgo) + mtr*(NVdo + NVeo))/totalMass;
+            mu = obj.p.mu;
+            for i = length(Nr):-1:1
+                % angular momentum
+                Nh = cross(Nr(i,:), Nv(i,:));
+                h = norm(Nh);
+                % inclination
+                incl(i) = acos(Nh(3)/h);
+                % eccentricity
+                rhat = Nr(i,:)/norm(Nr(i,:));
+                Ne = cross(Nv(i,:), Nh)/mu - rhat;
+                e(i) = norm(Ne);
+                % RAAN
+                Nn = cross([0 0 1], Nh);
+                n = norm(Nn);
+                W(i) = acos(Nn(1)/n);
+                % semimajor axis
+                a(i) = h^2/mu/(1-e(i)^2);
             end
         end
 
@@ -238,66 +286,73 @@ classdef spacecraft
 
         function plotAngularMom(obj)
             t = obj.simout.tout;
-            [idx_lv_ab, idx_lh_ab] = lvlh_ab(obj);
-            [idx_lv_fg, idx_lh_fg] = lvlh_fg(obj);
-            [HGo, HG, Ho] = getAngularMom(obj);
-
+            [~, ~, ~, HGo_temp, HG_temp, Ho] = getAngularMom(obj);
+            HGo = HGo_temp - HGo_temp(1);
+            HG = HG_temp - HG_temp(1);
+           
             figure;
-            hold on
-            % plot(t, HGo);
-            HGo_lv_ab = HGo(idx_lv_ab);
-            t_HGo_lv_ab = t(idx_lv_ab);
-            HGo_lh_ab = HGo(idx_lh_ab);
-            t_HGo_lh_ab = t(idx_lh_ab);
-            [idx_lv_HGo_max, ~] = localMax(HGo_lv_ab);
-            [idx_lv_HGo_min, ~] = localMin(HGo_lv_ab);
-            [idx_lh_HGo_max, ~] = localMax(HGo_lh_ab);
-            [idx_lh_HGo_min, ~] = localMin(HGo_lh_ab);
-            plot(t_HGo_lv_ab, HGo_lv_ab)
-            plot(t_HGo_lh_ab, HGo_lh_ab)
-            plot(t_HGo_lv_ab(idx_lv_HGo_max), HGo_lv_ab(idx_lv_HGo_max), 'k--')
-            plot(t_HGo_lv_ab(idx_lv_HGo_min), HGo_lv_ab(idx_lv_HGo_min), 'k--')
-            plot(t_HGo_lh_ab(idx_lh_HGo_max), HGo_lh_ab(idx_lh_HGo_max), 'k--')
-            plot(t_HGo_lh_ab(idx_lh_HGo_min), HGo_lh_ab(idx_lh_HGo_min), 'k--')
-            title("Orbital Angular Momentum")
+            yyaxis left
+            ax = gca;
+            ax.YColor = 'k';
+            plot(t, HGo);
+            ylims = ylim;
+            ylabel("kg*m^2/s")
+            yyaxis right
+            ax = gca;
+            ax.YColor = 'k';
+            ylim(ylims./(4*obj.p.mp + 2*obj.p.mtr));
+            ylabel("m^2/s")
+            title("Change in Orbital Angular Momentum")
             xlabel("t (s)")
-            ylabel("angular momentum (kg*m^2/s)")
-            legend('ab vertical', 'ab horizonal')
-            grid on;
             prepFigPresentation2(obj, gcf)
 
             figure;
             hold on
-            %plot(t, HG)
-            HG_lv_ab = HG(idx_lv_ab);
-            t_HG_lv_ab = t(idx_lv_ab);
-            HG_lh_ab = HG(idx_lh_ab);
-            t_HG_lh_ab = t(idx_lh_ab);
-            [idx_lv_HG_max, ~] = localMax(HG_lv_ab);
-            [idx_lv_HG_min, ~] = localMin(HG_lv_ab);
-            [idx_lh_HG_max, ~] = localMax(HG_lh_ab);
-            [idx_lh_HG_min, ~] = localMin(HG_lh_ab);
-            plot(t_HG_lv_ab, HG_lv_ab)
-            plot(t_HG_lh_ab, HG_lh_ab)
-            plot(t_HG_lv_ab(idx_lv_HG_max), HG_lv_ab(idx_lv_HG_max), 'k--')
-            plot(t_HG_lv_ab(idx_lv_HG_min), HG_lv_ab(idx_lv_HG_min), 'k--')
-            plot(t_HG_lh_ab(idx_lh_HG_max), HG_lh_ab(idx_lh_HG_max), 'k--')
-            plot(t_HG_lh_ab(idx_lh_HG_min), HG_lh_ab(idx_lh_HG_min), 'k--')
-            title("Spacecraft Angular Momentum about its Center of Mass")
+            plot(t, HG)
+            title("Change in Spacecraft Spin Angular Momentum")
             xlabel("t (s)")
             ylabel("angular momentum (kg*m^2/s)")
-            legend('ab vertical', 'ab horizonal')
             grid on;
             prepFigPresentation2(obj, gcf)
 
             figure;
-            ax = axes;
-            hold on
-            plot(ax, t, Ho)
-            ylim([0.95*min(Ho)  1.05*max(Ho)])
+            plot(t, Ho)
+            ylim([min(Ho)-100*range(Ho)  max(Ho)+100*range(Ho)])
             title("Spacecraft Total Angular Momentum")
             xlabel("t (s)")
             ylabel("angular momentum (kg*m^2/s)")
+            prepFigPresentation2(obj, gcf)
+        end
+
+        function plotOrbitalElements(obj)
+            [a, e, incl, W] = getOrbitalElements(obj);
+            t = obj.simout.tout;
+
+            figure;
+            plot(t, a)
+            title("Semi-Major Axis")
+            xlabel("t (s)")
+            ylabel("(m)")
+            prepFigPresentation2(obj, gcf)
+
+            figure;
+            plot(t, e)
+            title("Eccentricity")
+            xlabel("t (s)")
+            prepFigPresentation2(obj, gcf)
+
+            figure;
+            subplot(1,2,1)
+            plot(t, rad2deg(incl))
+            title("Inclination")
+            xlabel("t (s)")
+            ylabel("deg")
+
+            subplot(1,2,2)
+            plot(t, rad2deg(W))
+            title("Longitude of Ascending Node")
+            xlabel("t (s)")
+            ylabel("deg")
             prepFigPresentation2(obj, gcf)
         end
 
@@ -341,7 +396,8 @@ classdef spacecraft
             zlabel('Z')
             view(axR,3)
             dataR = NRco;
-            axis(getAxisLimits3(dataR))
+            lims = getAxisLimits3(dataR);
+            axis([lims(1:2) lims(1:2) lims(5:6)]);
             truss_center = animatedline(axR);
 
             pause;
