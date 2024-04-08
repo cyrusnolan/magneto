@@ -8,10 +8,9 @@ close all
 % BEGIN USER INPUT-----------------------------
 % model = "dynamics";
 tic
-model = "dynamics_with_control";
-sim_stop_time = 3600*12;
+model = "dynamics";
 mu = 3.986e14;
-k_tether = 10;
+k_tether = 1;
 b_tether = 100;
 k_truss = 10;
 b_truss = 100;
@@ -23,13 +22,15 @@ mass_payload = 1500;
 mass_truss = 10;
 Imotor = 1;
 rmotor = 1;
-omega0 = -0.01;
+omega0 = 0.007;
 semi_major_axis = 6878e3;
 eccentricity = 0;
 inclination = pi/2;
 arugment_of_periapsis = 0;
 lon_ascending_node = 0;
 true_anomaly = pi/2;
+orbit_period = 2*pi*sqrt(semi_major_axis^3/mu);
+sim_stop_time = 1*orbit_period;
 % END USER INPUT--------------------------------
 
 % initialize parameters
@@ -44,8 +45,8 @@ o = orbit(mu,semi_major_axis,eccentricity,inclination, ...
 NX = state_vec_N(p, o);
 
 % initialize spacecraft
-sc2 = spacecraft(p, NX);
+sc = spacecraft(p, NX);
 
 % run sim
-sc2 = sim(sc2, sim_stop_time);
+sc = sim(sc, sim_stop_time);
 toc

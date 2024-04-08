@@ -12,13 +12,13 @@ function prepFigPresentation2(fignum)
             for i=1:length(fig_children)
             
                 if class(fig_children(i)) == "matlab.graphics.illustration.Legend"
-                    set(fig_children(i),'FontSize',16,'Interpreter','latex');
+                    set(fig_children(i),'FontSize',23,'Interpreter','latex');
                 end
 
-                set(fig_children(i),'FontSize',16);
-                % set(fig_children(i),'FontWeight','bold');
+                set(fig_children(i),'FontSize',23);
+                %set(fig_children(i),'FontWeight','bold');
                 
                 fig_children_children=get(fig_children(i),'Children');
-                set(fig_children_children,'LineWidth',1.5);
+                set(fig_children_children,'LineWidth',2.3);
             end
         end

@@ -1,7 +1,6 @@
 % simplified magneto 3
-% two control inputs - radial (modulating tether length) and tangential (magnetic torque)
-% desired trajectory in inertial crs
-% gravity included!
+% track a reference x^2/a^2 + y^2/b^2 = 1
+% same as simplified magneto 2, but gravity is now included
 
 clc
 clear

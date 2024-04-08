@@ -1,6 +1,7 @@
 % simplified magneto 2
-% two control inputs - radial (modulating tether length) and tangential (magnetic torque)
-% desired trajectory in inertial crs
+% track a reference x^2/a^2 + y^2/b^2 = 1
+% same as simplified magneto 1, but now two control inputs - radial (applied directly to mass) and tangential 
+% (applied directly to mass - simulating magnetic torque on the spacecraft)
 
 clc
 clear

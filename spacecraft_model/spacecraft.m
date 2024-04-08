@@ -219,55 +219,84 @@ classdef spacecraft
             prepFigPresentation2(gcf)
         end
 
-        function plotTetherLength(obj)
+        function plotTetherLength(obj, singleFig)
+            arguments
+                obj
+                singleFig logical=true
+            end
             t = obj.simout.tout;
             [idx_lv_ab, idx_lh_ab] = lvlh_ab(obj);
             [idx_lv_fg, idx_lh_fg] = lvlh_fg(obj);
-            figure;
+            
+            if singleFig
+                figure;
+                ax11 = subplot(2, 2, 1);
+                hold on
+                ax12 = subplot(2,2,2);
+                hold on
+                ax21 = subplot(2,2,3);
+                hold on
+                ax22 = subplot(2,2,4);
+                hold on
+                prepFigPresentation2(gcf)
+            else
+                figure;
+                ax11 = axes;
+                prepFigPresentation2(gcf)
+                hold on
+                figure;
+                ax12 = axes;
+                prepFigPresentation2(gcf)
+                hold on
+                figure;
+                ax21 = axes;
+                prepFigPresentation2(gcf)
+                hold on
+                figure;
+                ax22 = axes;
+                prepFigPresentation2(gcf)
+                hold on
+            end
 
-            ax11 = subplot(2, 2, 1);
-            hold on
+            % mass a
             plot(ax11, t, obj.simout.rad, 'k')
-            plot(ax11, t, obj.simout.rae, 'r-.')
+            plot(ax11, t, obj.simout.rae, 'r--')
             plot(ax11, t(idx_lv_ab), obj.simout.rad(idx_lv_ab), 'ro')
             plot(ax11, t(idx_lh_ab), obj.simout.rad(idx_lh_ab), 'ko')
-            title("mass a")
-            xlabel("t (s)")
-            ylabel("tether length (m)")
-            legend("tether one","tether two","local vertical","local horizontal")
+            title(ax11, "mass a")
+            xlabel(ax11, "t (s)")
+            ylabel(ax11, "tether length (m)")
+            legend(ax11, "tether one","tether two","local vertical","local horizontal")
             
-            ax12 = subplot(2,2,2);
-            hold on
+            % mass b
             plot(ax12, t, obj.simout.rbd, 'k')
-            plot(ax12, t, obj.simout.rbe, 'r-.')
+            plot(ax12, t, obj.simout.rbe, 'r--')
             plot(ax12, t(idx_lv_ab), obj.simout.rbd(idx_lv_ab), 'ro')
             plot(ax12, t(idx_lh_ab), obj.simout.rbd(idx_lh_ab), 'ko')
-            title("mass b")
-            xlabel("t (s)")
-            ylabel("tether length (m)")
-            legend("tether one","tether two","local vertical","local horizontal")
+            title(ax12, "mass b")
+            xlabel(ax12, "t (s)")
+            ylabel(ax12, "tether length (m)")
+            legend(ax12, "tether one","tether two","local vertical","local horizontal")
 
-            ax21 = subplot(2,2,3);
-            hold on
+            % mass f
             plot(ax21, t, obj.simout.rfd, 'k')
-            plot(ax21, t, obj.simout.rfe, 'r-.')
+            plot(ax21, t, obj.simout.rfe, 'r--')
             plot(ax21, t(idx_lv_fg), obj.simout.rfd(idx_lv_fg), 'ro')
             plot(ax21, t(idx_lh_fg), obj.simout.rfd(idx_lh_fg), 'ko')
-            title("mass f")
-            xlabel("t (s)")
-            ylabel("tether length (m)")
-            legend("tether one","tether two","local vertical","local horizontal")
+            title(ax21, "mass f")
+            xlabel(ax21, "t (s)")
+            ylabel(ax21, "tether length (m)")
+            legend(ax21, "tether one","tether two","local vertical","local horizontal")
 
-            ax22 = subplot(2,2,4);
-            hold on
+            % mass g
             plot(ax22, t, obj.simout.rgd, 'k')
-            plot(ax22, t, obj.simout.rge, 'r-.')
+            plot(ax22, t, obj.simout.rge, 'r--')
             plot(ax22, t(idx_lv_fg), obj.simout.rgd(idx_lv_fg), 'ro')
             plot(ax22, t(idx_lh_fg), obj.simout.rgd(idx_lh_fg), 'ko')
-            title("mass g")
-            xlabel("t (s)")
-            ylabel("tether length (m)")
-            legend("tether one","tether two","local vertical","local horizontal")
+            title(ax22, "mass g")
+            xlabel(ax22, "t (s)")
+            ylabel(ax22, "tether length (m)")
+            legend(ax22, "tether one","tether two","local vertical","local horizontal")
         end
 
         function plotAngularMom(obj)
@@ -275,7 +304,7 @@ classdef spacecraft
             [HGo, HG, Ho] = getAngularMom(obj);
             
             figure;
-            sgtitle("Orbital Angular Momentum")
+            sgtitle("Change in Orbital Angular Momentum")
             for i = 3:-1:1
                 spf1(i) = subplot(3,1,i);
                 plot(t, HGo(:,i))
@@ -283,15 +312,18 @@ classdef spacecraft
                 xlabel("time (s)")
                 ylabel("kg*m^2/s");
                 if i == 1
-                    title("ECI X");
+                    text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
+                    spf1(i).XTickLabels = {};
                 elseif i == 2
-                    title("ECI Y");
+                    text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
+                    spf1(i).XTickLabels = {};
                 elseif i == 3
-                    title("ECI Z");
+                    text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
+                    xlabel(spf1(i), "time (s)");
                 end
             end
-            prepFigPresentation2(gcf)
             linkaxes_y(spf1);
+            prepFigPresentation2(gcf)
 
             figure;
             sgtitle("Spacecraft Spin Angular Momentum")
@@ -299,18 +331,20 @@ classdef spacecraft
                 spf2(i) = subplot(3,1,i);
                 plot(t, HG(:,i))
                 grid on
-                xlabel("time (s)")
                 ylabel("kg*m^2/s");
                 if i == 1
-                    title("ECI X");
+                    text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
+                    spf2(i).XTickLabels = {};
                 elseif i == 2
-                    title("ECI Y");
+                    text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
+                    spf2(i).XTickLabels = {};
                 elseif i == 3
-                    title("ECI Z");
+                    text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
+                    xlabel(spf2(i), "time (s)");
                 end
             end
-            prepFigPresentation2(gcf)
             linkaxes_y(spf2);
+            prepFigPresentation2(gcf)
 
             figure;
             sgtitle("Total Angular Momentum")
@@ -320,17 +354,19 @@ classdef spacecraft
                 grid on
                 xlabel("time (s)")
                 ylabel("kg*m^2/s");
-                %spf3(i).YAxis.TickLabelFormat = '%.1f';
                 if i == 1
-                    title("ECI X");
+                    text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
+                    spf3(i).XTickLabels = {};
                 elseif i == 2
-                    title("ECI Y");
+                    text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
+                    spf3(i).XTickLabels = {};
                 elseif i == 3
-                    title("ECI Z");
+                    text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
+                    xlabel(spf3(i), "time (s)");
                 end
             end
-            prepFigPresentation2(gcf)
             linkaxes_y(spf3);
+            prepFigPresentation2(gcf)
         end
 
         function plotOrbitalElements(obj)
@@ -338,8 +374,8 @@ classdef spacecraft
             t = obj.simout.tout;
 
             figure;
-            plot(t, a)
-            title("Semi-Major Axis")
+            plot(t, a-a(1))
+            title("Change in Semi-Major Axis")
             xlabel("t (s)")
             ylabel("(m)")
             prepFigPresentation2(gcf)
@@ -365,7 +401,14 @@ classdef spacecraft
             prepFigPresentation2(gcf)
         end
 
-        function animate(obj)
+        function animate(obj, record)
+            arguments
+                obj
+                record logical = false
+            end
+
+            tout = obj.simout.tout;
+            tout_duration = seconds(tout);
             NRac = obj.simout.NRac;
             NRbc = obj.simout.NRbc;
             NRfc = obj.simout.NRfc;
@@ -384,14 +427,14 @@ classdef spacecraft
             view(axL,3)
             dataL = [NRac;NRbc;NRfc;NRgc;NRdc;NRec];
             axis(getAxisLimits3(dataL))
-            trace_a = animatedline(axL);
-            trace_b = animatedline(axL);
+            % trace_a = animatedline(axL);
+            % trace_b = animatedline(axL);
             tether_ad = animatedline(axL);
             tether_ae = animatedline(axL);
             tether_bd = animatedline(axL);
             tether_be = animatedline(axL);
-            trace_f = animatedline(axL);
-            trace_g = animatedline(axL);
+            % trace_f = animatedline(axL);
+            % trace_g = animatedline(axL);
             tether_fd = animatedline(axL);
             tether_fe = animatedline(axL);
             tether_gd = animatedline(axL);
@@ -399,6 +442,8 @@ classdef spacecraft
             truss_de = animatedline(axL);
 
             axR = subplot(1,2,2);
+            hold on
+            axis equal
             title("Spacecraft Orbit Trajectory")
             xlabel('X')
             ylabel('Y')
@@ -407,24 +452,41 @@ classdef spacecraft
             dataR = NRco;
             lims = getAxisLimits3(dataR);
             axis([lims(1:2) lims(1:2) lims(5:6)]);
-            truss_center = animatedline(axR);
-
+            truss_center = animatedline(axR, "Color", 'r', "LineWidth", 3);
+            speedUp = 20;
+            [x, y, z] = sphere;
+            surf(6378e3*x, 6378e3*y, 6356e3*z, 'FaceColor','b');
+            hText = text(axR, 0.3, 0.85, '', 'Units','normalized');
+            if record
+                vidwrite = VideoWriter("spacecraft_trajectory");
+                vidwrite.FrameRate = 50;
+                open(vidwrite);
+            end
             pause;
-            for i=1:20:length(NRac)
-                addpoints(trace_a,NRac(i,1),NRac(i,2),NRac(i,3))
-                addpoints(trace_b,NRbc(i,1),NRbc(i,2),NRbc(i,3))
+            for i=1:speedUp:length(NRac)
+                [hour, min, ~] = hms(tout_duration(i));
+                hour_disp = string(sprintf('%02d', hour));
+                min_disp = string(sprintf('%02d', min));
+                %sec_disp = string(sprintf('%02.0f', sec));
+                hText.String = 'Time (HH:MM): +'+hour_disp+':'+min_disp;
+                %addpoints(trace_a,NRac(i,1),NRac(i,2),NRac(i,3))
+                %addpoints(trace_b,NRbc(i,1),NRbc(i,2),NRbc(i,3))
                 addpoints(tether_ad,[NRdc(i,1) NRac(i,1)],[NRdc(i,2) NRac(i,2)],[NRdc(i,3) NRac(i,3)])
                 addpoints(tether_ae,[NRec(i,1) NRac(i,1)],[NRec(i,2) NRac(i,2)],[NRec(i,3) NRac(i,3)])
                 addpoints(tether_bd,[NRdc(i,1) NRbc(i,1)],[NRdc(i,2) NRbc(i,2)],[NRdc(i,3) NRbc(i,3)])
                 addpoints(tether_be,[NRec(i,1) NRbc(i,1)],[NRec(i,2) NRbc(i,2)],[NRec(i,3) NRbc(i,3)])
                 addpoints(truss_de,[NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)])
-                addpoints(trace_f,NRfc(i,1),NRfc(i,2),NRfc(i,3))
-                addpoints(trace_g,NRgc(i,1),NRgc(i,2),NRgc(i,3))
+                %addpoints(trace_f,NRfc(i,1),NRfc(i,2),NRfc(i,3))
+                %addpoints(trace_g,NRgc(i,1),NRgc(i,2),NRgc(i,3))
                 addpoints(tether_fd,[NRdc(i,1) NRfc(i,1)],[NRdc(i,2) NRfc(i,2)],[NRdc(i,3) NRfc(i,3)])
                 addpoints(tether_fe,[NRec(i,1) NRfc(i,1)],[NRec(i,2) NRfc(i,2)],[NRec(i,3) NRfc(i,3)])
                 addpoints(tether_gd,[NRdc(i,1) NRgc(i,1)],[NRdc(i,2) NRgc(i,2)],[NRdc(i,3) NRgc(i,3)])
                 addpoints(tether_ge,[NRec(i,1) NRgc(i,1)],[NRec(i,2) NRgc(i,2)],[NRec(i,3) NRgc(i,3)])
                 addpoints(truss_center,NRco(i,1),NRco(i,2),NRco(i,3))
+                if record && mod(i-1,speedUp*10) == 0
+                    frame = getframe(gcf);
+                    writeVideo(vidwrite,frame);
+                end
                 drawnow limitrate
                 clearpoints(tether_ad)
                 clearpoints(tether_ae)
@@ -435,6 +497,7 @@ classdef spacecraft
                 clearpoints(tether_fe)
                 clearpoints(tether_gd)
                 clearpoints(tether_ge)
+
             end
             addpoints(tether_ad,[NRdc(end,1) NRac(end,1)],[NRdc(end,2) NRac(end,2)],[NRdc(end,3) NRac(end,3)])
             addpoints(tether_ae,[NRec(end,1) NRac(end,1)],[NRec(end,2) NRac(end,2)],[NRec(end,3) NRac(end,3)])
@@ -445,7 +508,7 @@ classdef spacecraft
             addpoints(tether_fe,[NRec(end,1) NRfc(end,1)],[NRec(end,2) NRfc(end,2)],[NRec(end,3) NRfc(end,3)])
             addpoints(tether_gd,[NRdc(end,1) NRgc(end,1)],[NRdc(end,2) NRgc(end,2)],[NRdc(end,3) NRgc(end,3)])
             addpoints(tether_ge,[NRec(end,1) NRgc(end,1)],[NRec(end,2) NRgc(end,2)],[NRec(end,3) NRgc(end,3)])
+            vidwrite.close();
         end
-
     end
 end

@@ -1,24 +1,30 @@
 function linkaxes_y(ax)
 % sets range(y) equal for all subplots
 % chooses biggest range
-% can handle case with multple y axes on a single subplot
     
-    % gather ranges
+    % gather data
     for i = length(ax):-1:1
-        for j = length(ax(i).YAxis):-1:1
-            % i = number of subplots
-            % j = number of axes on subplot
-            ranges(j, i) = range(ax(i).YAxis(j).Limits);
+        children = ax(i).Children;
+        for j = 1:length(children)
+            if isa(children(j), 'matlab.graphics.chart.primitive.Line')
+                ydat = children(j).YData;
+            end
         end
+        ranges(i) = range(ydat);
+        ymid(i) = min(ydat) + ranges(i)/2;
     end
 
     % set axes lims
-    for j = length(ax(i).YAxis):-1:1
-        maxRange = max(ranges(j, :));
-        for i = 1:length(ax)
-            meanLimVal = mean(ax(i).YAxis(j).Limits);
-            ax(i).YAxis(j).Limits = [meanLimVal-maxRange/2  meanLimVal+maxRange/2];
-        end
+    % axes limits are center of the range + maxrange/2
+    maxrange = max(ranges);
+    tick_range = maxrange*0.45;
+    for i = 1:length(ax)
+        low = ymid(i) - maxrange/2;
+        high = ymid(i) + maxrange/2;
+        ylim(ax(i), [low, high]);
+        Y_ticks = [ymid(i) - tick_range, ymid(i), ymid(i) + tick_range];
+        yticks(ax(i), Y_ticks);
+        Y_tick_labels = {"- "+sprintf("%.0f", tick_range), sprintf("%0.3e", ymid(i)),"+ "+sprintf("%.0f", tick_range)};
+        yticklabels(ax(i), Y_tick_labels);
     end
 end
-

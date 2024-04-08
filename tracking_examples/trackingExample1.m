@@ -1,6 +1,6 @@
 % simplified magneto 1
-% only one control input - radial force on the mass
-% desired trajectory in cartesian coords
+% track a reference x^2/a^2 + y^2/b^2 = 1
+% one control input - radial force applied directly to the mass
 
 clc
 clear
