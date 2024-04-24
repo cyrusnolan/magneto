@@ -238,35 +238,37 @@ classdef spacecraft
                 hold on
                 ax22 = subplot(2,2,4);
                 hold on
-                prepFigPresentation2(gcf)
             else
                 figure;
                 ax11 = axes;
-                prepFigPresentation2(gcf)
                 hold on
+                grid on
                 figure;
                 ax12 = axes;
-                prepFigPresentation2(gcf)
                 hold on
                 figure;
                 ax21 = axes;
-                prepFigPresentation2(gcf)
                 hold on
                 figure;
                 ax22 = axes;
-                prepFigPresentation2(gcf)
                 hold on
             end
 
             % mass a
             plot(ax11, t, obj.simout.rad, 'k')
             plot(ax11, t, obj.simout.rae, 'r--')
-            plot(ax11, t(idx_lv_ab), obj.simout.rad(idx_lv_ab), 'ro')
-            plot(ax11, t(idx_lh_ab), obj.simout.rad(idx_lh_ab), 'ko')
+            fig = get(ax11, 'Parent');
+            prepFigPresentation2(fig)
+            plot(ax11, t(idx_lv_ab), obj.simout.rad(idx_lv_ab), 'ro', 'LineWidth', 5)
+            plot(ax11, t(idx_lh_ab), obj.simout.rad(idx_lh_ab), 'ko', 'LineWidth', 5)
             title(ax11, "mass a")
-            xlabel(ax11, "t (s)")
+            xlabel(ax11, "time (hours)")
             ylabel(ax11, "tether length (m)")
-            legend(ax11, "tether one","tether two","local vertical","local horizontal")
+            legend(ax11, "Tether one","Tether two","Local vertical","Local horizontal")
+            ax11.XTick = 0:1/4*60*60:max(ax11.XLim);
+            ax11.XTickLabel = ax11.XTick/(60*60);
+            xlim([min(t), max(t)]);
+            ylim([517, 519]);
             
             % mass b
             plot(ax12, t, obj.simout.rbd, 'k')
@@ -401,6 +403,77 @@ classdef spacecraft
             prepFigPresentation2(gcf)
         end
 
+        function plotDiagram(obj)
+            NRac = obj.simout.NRac;
+            NRbc = obj.simout.NRbc;
+            NRfc = obj.simout.NRfc;
+            NRgc = obj.simout.NRgc;
+            NRdc = obj.simout.NRdc;
+            NRec = obj.simout.NRec;
+
+            radius = 75;
+            i=1e4;
+
+            % payload mass a
+            [xa, ya, za] = sphere;
+            xa = xa*radius + NRac(i, 1);
+            ya = ya*radius + NRac(i, 2);
+            za = za*radius + NRac(i, 3);
+            
+            % payload mass b
+            [xb, yb, zb] = sphere;
+            xb = xb*radius + NRbc(i, 1);
+            yb = yb*radius + NRbc(i, 2);
+            zb = zb*radius + NRbc(i, 3);
+
+            % payload mass f
+            [xf, yf, zf] = sphere;
+            xf = xf*radius + NRfc(i, 1);
+            yf = yf*radius + NRfc(i, 2);
+            zf = zf*radius + NRfc(i, 3);
+
+            % payload mass g
+            [xg, yg, zg] = sphere;
+            xg = xg*radius + NRgc(i, 1);
+            yg = yg*radius + NRgc(i, 2);
+            zg = zg*radius + NRgc(i, 3);
+
+            figure;
+            hold on
+            axis equal
+            grid on
+            view(3)
+            dataL = [NRac;NRbc;NRfc;NRgc;NRdc;NRec];
+            axis(getAxisLimits3(dataL))
+            plot3([NRdc(i,1) NRac(i,1)],[NRdc(i,2) NRac(i,2)],[NRdc(i,3) NRac(i,3)], 'r')
+            plot3([NRec(i,1) NRac(i,1)],[NRec(i,2) NRac(i,2)],[NRec(i,3) NRac(i,3)], 'r')
+            plot3([NRdc(i,1) NRbc(i,1)],[NRdc(i,2) NRbc(i,2)],[NRdc(i,3) NRbc(i,3)], 'r')
+            plot3([NRec(i,1) NRbc(i,1)],[NRec(i,2) NRbc(i,2)],[NRec(i,3) NRbc(i,3)], 'r')
+            plot3([NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)], 'k')
+            plot3([NRdc(i,1) NRfc(i,1)],[NRdc(i,2) NRfc(i,2)],[NRdc(i,3) NRfc(i,3)], 'r')
+            plot3([NRec(i,1) NRfc(i,1)],[NRec(i,2) NRfc(i,2)],[NRec(i,3) NRfc(i,3)], 'r')
+            plot3([NRdc(i,1) NRgc(i,1)],[NRdc(i,2) NRgc(i,2)],[NRdc(i,3) NRgc(i,3)], 'r')
+            plot3([NRec(i,1) NRgc(i,1)],[NRec(i,2) NRgc(i,2)],[NRec(i,3) NRgc(i,3)], 'r')
+            plot3([NRac(i,1) NRfc(i,1)],[NRac(i,2) NRfc(i,2)],[NRac(i,3) NRfc(i,3)], 'b')
+            plot3([NRac(i,1) NRgc(i,1)],[NRac(i,2) NRgc(i,2)],[NRac(i,3) NRgc(i,3)], 'b')
+            plot3([NRbc(i,1) NRfc(i,1)],[NRbc(i,2) NRfc(i,2)],[NRbc(i,3) NRfc(i,3)], 'b')
+            plot3([NRbc(i,1) NRgc(i,1)],[NRbc(i,2) NRgc(i,2)],[NRbc(i,3) NRgc(i,3)], 'b')
+            mp_a = surf(xa, ya, za);
+            mp_b = surf(xb, yb, zb);
+            mp_f = surf(xf, yf, zf);
+            mp_g = surf(xg, yg, zg);
+            set(mp_a, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
+            set(mp_b, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
+            set(mp_f, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
+            set(mp_g, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
+            legend(["Tether with current", '', '', '', "Truss", '', '', '', '', 'Tether without current', '', '', '', 'Payloads'])
+            xlabel("ECI X (m)")
+            ylabel("ECI Y (m)")
+            zlabel("ECI Z (m)")
+            prepFigPresentation2(gcf)
+            light('Position', [0 -1 0], 'Style', 'infinite');
+        end
+
         function animate(obj, record)
             arguments
                 obj
@@ -416,6 +489,30 @@ classdef spacecraft
             NRdc = obj.simout.NRdc;
             NRec = obj.simout.NRec;
             NRco = obj.simout.NRco;
+
+            figure;
+            i=1e4;
+            hold on
+            axis equal
+            grid on
+            view(3)
+            dataL = [NRac;NRbc;NRfc;NRgc;NRdc;NRec];
+            axis(getAxisLimits3(dataL))
+            plot3([NRdc(i,1) NRac(i,1)],[NRdc(i,2) NRac(i,2)],[NRdc(i,3) NRac(i,3)], 'r')
+            plot3([NRec(i,1) NRac(i,1)],[NRec(i,2) NRac(i,2)],[NRec(i,3) NRac(i,3)], 'r')
+            plot3([NRdc(i,1) NRbc(i,1)],[NRdc(i,2) NRbc(i,2)],[NRdc(i,3) NRbc(i,3)], 'r')
+            plot3([NRec(i,1) NRbc(i,1)],[NRec(i,2) NRbc(i,2)],[NRec(i,3) NRbc(i,3)], 'r')
+            plot3([NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)], 'k')
+            plot3([NRdc(i,1) NRfc(i,1)],[NRdc(i,2) NRfc(i,2)],[NRdc(i,3) NRfc(i,3)], 'r')
+            plot3([NRec(i,1) NRfc(i,1)],[NRec(i,2) NRfc(i,2)],[NRec(i,3) NRfc(i,3)], 'r')
+            plot3([NRdc(i,1) NRgc(i,1)],[NRdc(i,2) NRgc(i,2)],[NRdc(i,3) NRgc(i,3)], 'r')
+            plot3([NRec(i,1) NRgc(i,1)],[NRec(i,2) NRgc(i,2)],[NRec(i,3) NRgc(i,3)], 'r')
+            plot3([NRac(i,1) NRfc(i,1)],[NRac(i,2) NRfc(i,2)],[NRac(i,3) NRfc(i,3)], 'b')
+            plot3([NRac(i,1) NRgc(i,1)],[NRac(i,2) NRgc(i,2)],[NRac(i,3) NRgc(i,3)], 'b')
+            plot3([NRbc(i,1) NRfc(i,1)],[NRbc(i,2) NRfc(i,2)],[NRbc(i,3) NRfc(i,3)], 'b')
+            plot3([NRbc(i,1) NRgc(i,1)],[NRbc(i,2) NRgc(i,2)],[NRbc(i,3) NRgc(i,3)], 'b')
+            legend(["Tether with current", '', '', '', "Truss", '', '', '', '', 'Tether without current', '', '', ''])
+            prepFigPresentation2(gcf)
 
             figure;
             axL = subplot(1,2,1);
