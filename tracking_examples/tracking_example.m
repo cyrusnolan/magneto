@@ -16,13 +16,13 @@ params.tr = 4;
 params.g = 9.8;
 params.phi = deg2rad(45);
 
-[X_1dot_fun, X_ref_fun, u_ref_fun, A_ref_fun, B_ref_fun] = systemSetup(params);
+[X_1dot_fun, X_ref_fun, u_ref_fun, A_lin_fun, B_lin_fun] = systemSetup(params);
 
 tspan = 0:0.01:20;
 X0 = X_ref_fun(0);
 
 [tout, yout] = ode45(@(t, X) ...
-    odefun(t, X, X_1dot_fun, X_ref_fun(t), u_ref_fun(t), A_ref_fun(t), B_ref_fun(t)), ...
+    odefun(t, X, X_1dot_fun, X_ref_fun(t), u_ref_fun(t), A_lin_fun(t), B_lin_fun(t)), ...
     tspan, X0);
 
 % eval things

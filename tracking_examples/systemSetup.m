@@ -1,4 +1,4 @@
-function [X_1dot_fun, X_ref_fun, u_ref_fun, A_ref_fun, B_ref_fun] = systemSetup(params)
+function [X_1dot_fun, X_ref_fun, u_ref_fun, A_lin_fun, B_lin_fun] = systemSetup(params)
 %GENTRAJ generate desired tether length state and control input
 %trajectories
 %
@@ -79,8 +79,8 @@ function [X_1dot_fun, X_ref_fun, u_ref_fun, A_ref_fun, B_ref_fun] = systemSetup(
     
     % linearize Jacobians around refs
     A_ref = subs(A, [X; M], [X_ref; M_ref]);
-    A_ref_fun = matlabFunction(A_ref);
+    A_lin_fun = matlabFunction(A_ref);
     B_ref = subs(B, X, X_ref);
-    B_ref_fun = matlabFunction(B_ref);
+    B_lin_fun = matlabFunction(B_ref);
 end
 
