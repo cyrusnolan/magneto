@@ -1,7 +1,6 @@
 % simplified magneto 4
-% track a titled (or rotated) ellipse
-% same as simplified magneto 3, but now the ellipse is tilted, the dynamics include damping, and the
-% radial control input modulates tether length instead of applying a force directly to the mass
+% track rotated ellipse
+% same as simplified magneto 3, but now the ellipse is tilted, the dynamics include damping
 % *note names of input forces have changed from example 3
 
 clc
@@ -9,11 +8,11 @@ clear
 close all
 %%
 % params
-p.a = 500;
-p.b = 125;
+p.a = 550;
+p.b = 450;
 p.ma = 1;
 p.g = 9.8;
-p.k = 1;
+p.k = 100;
 p.c = 10;
 p.w = -0.5;
 p.phi = deg2rad(45);
@@ -27,12 +26,32 @@ X0 = Xd_fun(0);
 [tout, yout] = ode45(@(t, x) odefun(t, x, Xdot_fun, Ad_fun(t), Bd_fun(t), Xd_fun(t), ud_fun(t)), ...
                                 tspan, X0);
 
-% plot
+% plot desired inputs
+for i = length(tspan):-1:1
+    ud_eval(1:2,i) = ud_fun(tspan(i));
+end
+figure;
+subplot(1,2,1)
+plot(tspan, ud_eval(1,:))
+title("Tud")
+xlabel("time (s)")
+ylabel("Tud (N)")
+
+subplot(1,2,2)
+plot(tspan, ud_eval(2,:))
+title("Md")
+xlabel("time (s)")
+ylabel("Md (N)")
+
+% plot output
 x = yout(:,1);
 y = yout(:,2);
+figure;
 plot(x,y)
+title("Output trajectory")
+xlabel("x (m)")
+ylabel("y (m)")
 axis equal
-
 
 function [Xdot_fun, Ad_fun, Bd_fun, Xd_fun, ud_fun] = sytemSetup(p)
     % vars
@@ -137,7 +156,7 @@ function Xdot = odefun(~, X, Xdot_fun, A, B, Xd, ud)
     % control law
     u = ud - K*(X-Xd);
     
-    % progate state
+    % propagate state
     l = sqrt(x^2 + y^2);
     Tu = u(1);
     M = u(2);
