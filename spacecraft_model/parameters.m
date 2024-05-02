@@ -19,12 +19,16 @@ classdef parameters
         invIm
         rm
         w
+        A
+        kp_M
+        ki_M
     end
     
     methods
         function obj = parameters(model, gravitationalParameter, tetherSpringConst, tetherDampingRatio, ...
                 trussSpringConst, trussDampingRatio, safetySprintConst, safetyDampingRatio, trussLength, ...
-                payloadRadius, massPayload, massTruss, Imotor, rmotor, initialAngularVelocity)
+                payloadRadius, massPayload, massTruss, Imotor, rmotor, initialAngularVelocity, tetherDelta, ...
+                kp_M, zero_loc_M)
             %PARAMETERS Construct an instance of this class
             %   Detailed explanation goes here
 
@@ -44,6 +48,9 @@ classdef parameters
             obj.invIm = Imotor;
             obj.rm = rmotor;
             obj.w = initialAngularVelocity;
+            obj.A = tetherDelta;
+            obj.kp_M = kp_M;
+            obj.ki_M = kp_M * zero_loc_M;
         end
     end
 end

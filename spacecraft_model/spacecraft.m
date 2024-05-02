@@ -39,6 +39,10 @@ classdef spacecraft
                 "d0 = "+obj.p.d0+"; " + newline + ...
                 "l0 = "+obj.p.l0+"; " + newline + ...
                 "ls0 = "+obj.p.ls0+"; " + newline + ...
+                "w = "+obj.p.w+"; " + newline + ...
+                "A = "+obj.p.A+"; " + newline + ...
+                "kp_M = "+obj.p.kp_M+"; " + newline + ...
+                "ki_M = "+obj.p.ki_M+"; " + newline + ...
                 "mu = "+obj.p.mu+"; " + newline + ...
                 "mp = "+obj.p.mp+"; " + newline + ...
                 "mp_inv = "+1/obj.p.mp+"; " + newline + ...
@@ -489,30 +493,6 @@ classdef spacecraft
             NRdc = obj.simout.NRdc;
             NRec = obj.simout.NRec;
             NRco = obj.simout.NRco;
-
-            figure;
-            i=1e4;
-            hold on
-            axis equal
-            grid on
-            view(3)
-            dataL = [NRac;NRbc;NRfc;NRgc;NRdc;NRec];
-            axis(getAxisLimits3(dataL))
-            plot3([NRdc(i,1) NRac(i,1)],[NRdc(i,2) NRac(i,2)],[NRdc(i,3) NRac(i,3)], 'r')
-            plot3([NRec(i,1) NRac(i,1)],[NRec(i,2) NRac(i,2)],[NRec(i,3) NRac(i,3)], 'r')
-            plot3([NRdc(i,1) NRbc(i,1)],[NRdc(i,2) NRbc(i,2)],[NRdc(i,3) NRbc(i,3)], 'r')
-            plot3([NRec(i,1) NRbc(i,1)],[NRec(i,2) NRbc(i,2)],[NRec(i,3) NRbc(i,3)], 'r')
-            plot3([NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)], 'k')
-            plot3([NRdc(i,1) NRfc(i,1)],[NRdc(i,2) NRfc(i,2)],[NRdc(i,3) NRfc(i,3)], 'r')
-            plot3([NRec(i,1) NRfc(i,1)],[NRec(i,2) NRfc(i,2)],[NRec(i,3) NRfc(i,3)], 'r')
-            plot3([NRdc(i,1) NRgc(i,1)],[NRdc(i,2) NRgc(i,2)],[NRdc(i,3) NRgc(i,3)], 'r')
-            plot3([NRec(i,1) NRgc(i,1)],[NRec(i,2) NRgc(i,2)],[NRec(i,3) NRgc(i,3)], 'r')
-            plot3([NRac(i,1) NRfc(i,1)],[NRac(i,2) NRfc(i,2)],[NRac(i,3) NRfc(i,3)], 'b')
-            plot3([NRac(i,1) NRgc(i,1)],[NRac(i,2) NRgc(i,2)],[NRac(i,3) NRgc(i,3)], 'b')
-            plot3([NRbc(i,1) NRfc(i,1)],[NRbc(i,2) NRfc(i,2)],[NRbc(i,3) NRfc(i,3)], 'b')
-            plot3([NRbc(i,1) NRgc(i,1)],[NRbc(i,2) NRgc(i,2)],[NRbc(i,3) NRgc(i,3)], 'b')
-            legend(["Tether with current", '', '', '', "Truss", '', '', '', '', 'Tether without current', '', '', ''])
-            prepFigPresentation2(gcf)
 
             figure;
             axL = subplot(1,2,1);
