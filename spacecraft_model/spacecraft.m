@@ -30,6 +30,8 @@ classdef spacecraft
                 gravity {mustBeA(gravity,"logical")} = true
             end
             preloadFcn = "gravity = "+gravity+"; " + newline + ...
+                "e_a = "+obj.p.ellipse_a+"; " + newline + ...
+                "e_b = "+obj.p.ellipse_b  +"; " + newline + ...
                 "k = "+obj.p.k+"; " + newline + ...
                 "b = "+obj.p.b+"; " + newline + ...
                 "ktr = "+obj.p.ktr+"; " + newline + ...
@@ -38,9 +40,9 @@ classdef spacecraft
                 "bs = "+obj.p.bs+"; " + newline + ...
                 "d0 = "+obj.p.d0+"; " + newline + ...
                 "l0 = "+obj.p.l0+"; " + newline + ...
+                "p0 = "+obj.p.p0+"; " + newline + ...
                 "ls0 = "+obj.p.ls0+"; " + newline + ...
                 "w = "+obj.p.w+"; " + newline + ...
-                "A = "+obj.p.A+"; " + newline + ...
                 "kp_M = "+obj.p.kp_M+"; " + newline + ...
                 "ki_M = "+obj.p.ki_M+"; " + newline + ...
                 "mu = "+obj.p.mu+"; " + newline + ...
@@ -48,8 +50,6 @@ classdef spacecraft
                 "mp_inv = "+1/obj.p.mp+"; " + newline + ...
                 "mtr = "+obj.p.mtr+"; " + newline + ...
                 "mtr_inv = "+1/obj.p.mtr+"; " + newline + ...
-                "invIm = "+obj.p.invIm+"; " + newline + ...
-                "rm = "+obj.p.rm+"; " + newline + ...
                 "NRao0 = "+mat2str(obj.NX.NRao0)+"; " + newline + ...
                 "NRbo0 = "+mat2str(obj.NX.NRbo0)+"; " + newline + ...
                 "NRfo0 = "+mat2str(obj.NX.NRfo0)+"; " + newline + ...
@@ -212,14 +212,14 @@ classdef spacecraft
             figure;
             hold on
             plot(t, rde)
-            plot(t(idx_lv_ab), rde(idx_lv_ab), 'ro')
-            plot(t(idx_lh_ab), rde(idx_lh_ab), 'ko')
-            plot(t(idx_lv_fg), rde(idx_lv_fg), 'bo')
-            plot(t(idx_lh_fg), rde(idx_lh_fg), 'mo')
+            % plot(t(idx_lv_ab), rde(idx_lv_ab), 'ro')
+            % plot(t(idx_lh_ab), rde(idx_lh_ab), 'ko')
+            % plot(t(idx_lv_fg), rde(idx_lv_fg), 'bo')
+            % plot(t(idx_lh_fg), rde(idx_lh_fg), 'mo')
             title("Truss Length vs time")
             xlabel("t (s)")
             ylabel("truss length (m)")
-            legend('', 'ab vertical', 'ab horizonal', 'fg vertical', 'fg horizontal')
+            % legend('', 'ab vertical', 'ab horizonal', 'fg vertical', 'fg horizontal')
             prepFigPresentation2(gcf)
         end
 
@@ -236,12 +236,16 @@ classdef spacecraft
                 figure;
                 ax11 = subplot(2, 2, 1);
                 hold on
+                grid on
                 ax12 = subplot(2,2,2);
-                hold on
+                hold on 
+                grid on
                 ax21 = subplot(2,2,3);
                 hold on
+                grid on
                 ax22 = subplot(2,2,4);
                 hold on
+                grid on
             else
                 figure;
                 ax11 = axes;
@@ -261,48 +265,45 @@ classdef spacecraft
             % mass a
             plot(ax11, t, obj.simout.rad, 'k')
             plot(ax11, t, obj.simout.rae, 'r--')
-            fig = get(ax11, 'Parent');
-            prepFigPresentation2(fig)
-            plot(ax11, t(idx_lv_ab), obj.simout.rad(idx_lv_ab), 'ro', 'LineWidth', 5)
-            plot(ax11, t(idx_lh_ab), obj.simout.rad(idx_lh_ab), 'ko', 'LineWidth', 5)
+            % plot(ax11, t(idx_lv_ab), obj.simout.rad(idx_lv_ab), 'ro')
+            % plot(ax11, t(idx_lh_ab), obj.simout.rad(idx_lh_ab), 'ko')
             title(ax11, "mass a")
             xlabel(ax11, "time (hours)")
             ylabel(ax11, "tether length (m)")
-            legend(ax11, "Tether one","Tether two","Local vertical","Local horizontal")
+            legend(ax11, "Tether one","Tether two")%,"Local vertical","Local horizontal")
             ax11.XTick = 0:1/4*60*60:max(ax11.XLim);
             ax11.XTickLabel = ax11.XTick/(60*60);
             xlim([min(t), max(t)]);
-            ylim([517, 519]);
             
             % mass b
             plot(ax12, t, obj.simout.rbd, 'k')
             plot(ax12, t, obj.simout.rbe, 'r--')
-            plot(ax12, t(idx_lv_ab), obj.simout.rbd(idx_lv_ab), 'ro')
-            plot(ax12, t(idx_lh_ab), obj.simout.rbd(idx_lh_ab), 'ko')
+            % plot(ax12, t(idx_lv_ab), obj.simout.rbd(idx_lv_ab), 'ro')
+            % plot(ax12, t(idx_lh_ab), obj.simout.rbd(idx_lh_ab), 'ko')
             title(ax12, "mass b")
             xlabel(ax12, "t (s)")
             ylabel(ax12, "tether length (m)")
-            legend(ax12, "tether one","tether two","local vertical","local horizontal")
+            legend(ax12, "tether one","tether two")%,"local vertical","local horizontal")
 
             % mass f
             plot(ax21, t, obj.simout.rfd, 'k')
             plot(ax21, t, obj.simout.rfe, 'r--')
-            plot(ax21, t(idx_lv_fg), obj.simout.rfd(idx_lv_fg), 'ro')
-            plot(ax21, t(idx_lh_fg), obj.simout.rfd(idx_lh_fg), 'ko')
+            % plot(ax21, t(idx_lv_fg), obj.simout.rfd(idx_lv_fg), 'ro')
+            % plot(ax21, t(idx_lh_fg), obj.simout.rfd(idx_lh_fg), 'ko')
             title(ax21, "mass f")
             xlabel(ax21, "t (s)")
             ylabel(ax21, "tether length (m)")
-            legend(ax21, "tether one","tether two","local vertical","local horizontal")
+            legend(ax21, "tether one","tether two")%,"local vertical","local horizontal")
 
             % mass g
             plot(ax22, t, obj.simout.rgd, 'k')
             plot(ax22, t, obj.simout.rge, 'r--')
-            plot(ax22, t(idx_lv_fg), obj.simout.rgd(idx_lv_fg), 'ro')
-            plot(ax22, t(idx_lh_fg), obj.simout.rgd(idx_lh_fg), 'ko')
+            % plot(ax22, t(idx_lv_fg), obj.simout.rgd(idx_lv_fg), 'ro')
+            % plot(ax22, t(idx_lh_fg), obj.simout.rgd(idx_lh_fg), 'ko')
             title(ax22, "mass g")
             xlabel(ax22, "t (s)")
             ylabel(ax22, "tether length (m)")
-            legend(ax22, "tether one","tether two","local vertical","local horizontal")
+            legend(ax22, "tether one","tether two")%,"local vertical","local horizontal")
         end
 
         function plotAngularMom(obj)

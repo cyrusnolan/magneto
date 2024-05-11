@@ -21,9 +21,8 @@ classdef state_vec_N
         function obj = state_vec_N(p, orbit)
             %STATE_VEC_N Construct an instance of this class
             %   Detailed explanation goes here
-
-            % [re, de] = setEquilibrium(obj, p);
-            rp = sqrt(p.l0^2 - p.d0^2);
+            
+            rp = sqrt((p.l0-p.p0)^2 - p.d0^2);
             % form state vec in body coordinates
             b1 = [1;0;0]; % basis vectors
             b2 = [0;1;0];
@@ -46,8 +45,8 @@ classdef state_vec_N
             NRco0 = orbit.NR;
             NVco0 = orbit.NV;
             Nh_orbit = orbit.Nh;
-            Nb2 = -NRco0/norm(NRco0);
-            Nb3 = Nh_orbit/norm(Nh_orbit);
+            Nb2 = NRco0/norm(NRco0);
+            Nb3 = -Nh_orbit/norm(Nh_orbit);
             Nb1 = cross(Nb2,Nb3);
             NQB = [Nb1 Nb2 Nb3];
             NRac0 = NQB*BRac0;
@@ -74,17 +73,6 @@ classdef state_vec_N
             obj.NVgo0 = NVgc0+NVco0;
             obj.NVdo0 = NVdc0+NVco0;
             obj.NVeo0 = NVec0+NVco0;
-        end
-
-        function [re, de] = setEquilibrium(~, p)
-            % [x1, x2, x3, x4] = [la, lc, ld, d]
-            sys_eqn = @(x) [2*p.k*(x(1) - p.l0)*sqrt(x(1)^2 - x(4)^2)/x(1) - p.mp*p.w^2*sqrt(x(1)^2 - x(2)^2);
-                            4*p.k*(x(1) - p.l0)*x(2)/x(1) + p.ktr*(2*x(2) - 2*p.d0)];
-            x0 = [p.l0; p.d0];
-            solution = fsolve(sys_eqn, x0);
-            le = solution(1);
-            de = solution(2);
-            re = sqrt(le^2 - de^2);
         end
     end
 end

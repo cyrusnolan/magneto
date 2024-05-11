@@ -6,6 +6,7 @@ classdef orbit
         NR
         NV
         Nh
+        n
     end
     
     methods
@@ -34,6 +35,7 @@ classdef orbit
             obj.NR = NQP*PR;
             obj.NV = NQP*PV;
             obj.Nh = NQP*Ph;
+            obj.n = sqrt(mu/a^3);
         end
     end
 end
