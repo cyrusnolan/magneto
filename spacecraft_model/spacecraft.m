@@ -6,7 +6,6 @@ classdef spacecraft
         p
         NX
         simout
-        model
     end
     
     methods
@@ -18,14 +17,14 @@ classdef spacecraft
             end
             obj.p = p;
             obj.NX = NX; 
-            obj.model = p.model;
         end
 
-        function obj = sim(obj, stopTime, gravity)
+        function obj = sim(obj, model, stopTime, gravity)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             arguments
                 obj
+                model
                 stopTime {mustBePositive,mustBeReal,mustBeNumeric}
                 gravity {mustBeA(gravity,"logical")} = true
             end
@@ -62,14 +61,14 @@ classdef spacecraft
                 "NVgo0 = "+mat2str(obj.NX.NVgo0)+"; " + newline + ...
                 "NVdo0 = "+mat2str(obj.NX.NVdo0)+"; " + newline + ...
                 "NVeo0 = "+mat2str(obj.NX.NVeo0)+"; ";                     
-            load_system(obj.model)
-            set_param(obj.model, 'PreloadFcn', preloadFcn);
+            load_system(model)
+            set_param(model, 'PreloadFcn', preloadFcn);
             postloadFcn = "StopTime = "+stopTime+"; ";
-            set_param(obj.model, 'PostloadFcn', postloadFcn);
-            save_system(obj.model)
-            close_system(obj.model)
-            disp("Simulating model: " +obj.model)
-            obj.simout = sim(obj.model+".slx");
+            set_param(model, 'PostloadFcn', postloadFcn);
+            save_system(model)
+            close_system(model)
+            disp("Simulating model: " +model)
+            obj.simout = sim(model+".slx");
         end
 
         function [idx_lv, idx_lh] = lvlh_ab(obj)

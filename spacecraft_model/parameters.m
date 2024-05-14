@@ -3,7 +3,6 @@ classdef parameters
     %   Detailed explanation goes here
     
     properties
-        model
         mu
         k
         b
@@ -25,14 +24,13 @@ classdef parameters
     end
     
     methods
-        function obj = parameters(model, gravitationalParameter, tetherSpringConst, tetherDampingRatio, ...
+        function obj = parameters(gravitationalParameter, tetherSpringConst, tetherDampingRatio, ...
                 trussSpringConst, trussDampingRatio, safetySprintConst, safetyDampingRatio, trussLength, ...
                 payloadRadius, massPayload, massTruss, initialAngularVelocity, tetherDelta, ...
                 kp_M, zero_loc_M, p0)
             %PARAMETERS Construct an instance of this class
             %   Detailed explanation goes here
 
-            obj.model = model;
             obj.mu = gravitationalParameter;
             obj.k = tetherSpringConst;
             obj.b = tetherDampingRatio;
