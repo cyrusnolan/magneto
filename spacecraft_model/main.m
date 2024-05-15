@@ -7,7 +7,6 @@ close all
 % model = "dynamics";
 % next step: plot phi on tether length plot to see if tether length long
 % where I want it.
-tic
 model = "dynamics_with_control";
 mu = 3.986e14;
 p0 = 100;
@@ -37,7 +36,7 @@ sim_stop_time = 3000;
 % END USER INPUT--------------------------------
 
 % initialize parameters
-p = parameters(model, mu, k_tether, b_tether, k_truss, b_truss, k_safety, b_safety, ...
+p = parameters(mu, k_tether, b_tether, k_truss, b_truss, k_safety, b_safety, ...
     truss_length, payload_radius, mass_payload, mass_truss, omega0, tether_delta, ...
     kp_M, zero_loc_M, p0);
 
@@ -52,5 +51,6 @@ NX = state_vec_N(p, o);
 sc = spacecraft(p, NX);
 
 % run sim
-sc = sim(sc, sim_stop_time);
+tic
+sc = sim(sc, model, sim_stop_time);
 toc
