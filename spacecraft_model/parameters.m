@@ -18,8 +18,11 @@ classdef parameters
         w
         ellipse_a
         ellipse_b
-        kp_M
-        ki_M
+        kp_amc
+        ki_amc
+        amc_on_time
+        kp_tl
+        kd_tl
         p0
     end
     
@@ -27,7 +30,7 @@ classdef parameters
         function obj = parameters(gravitationalParameter, tetherSpringConst, tetherDampingRatio, ...
                 trussSpringConst, trussDampingRatio, safetySprintConst, safetyDampingRatio, trussLength, ...
                 payloadRadius, massPayload, massTruss, initialAngularVelocity, tetherDelta, ...
-                kp_M, zero_loc_M, p0)
+                kp_amc, zero_loc_amc, p0, kd_tl, zero_loc_tl, amc_on_time)
             %PARAMETERS Construct an instance of this class
             %   Detailed explanation goes here
 
@@ -42,12 +45,15 @@ classdef parameters
             obj.l0 = sqrt(payloadRadius^2 + obj.d0^2) + p0;
             obj.ls0 = sqrt(2)*payloadRadius;
             obj.mp = massPayload;
-            obj.mtr = massTruss/6;
+            obj.mtr = massTruss/3;
             obj.w = initialAngularVelocity;
             obj.ellipse_a = payloadRadius+tetherDelta;
             obj.ellipse_b = payloadRadius-tetherDelta;
-            obj.kp_M = kp_M;
-            obj.ki_M = kp_M * zero_loc_M;
+            obj.kp_amc = kp_amc;
+            obj.ki_amc = kp_amc * zero_loc_amc;
+            obj.amc_on_time = amc_on_time;
+            obj.kd_tl = kd_tl;
+            obj.kp_tl = kd_tl*zero_loc_tl;
             obj.p0 = p0;
         end
     end

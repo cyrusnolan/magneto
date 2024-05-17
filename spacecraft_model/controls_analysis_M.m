@@ -4,16 +4,18 @@ s = tf('s');
 k = 10;
 r_nom = 502;
 l_nom = 517;
-m = 1500;
+wn = 0.75;
+m = 2*k/(wn^2)*r_nom/l_nom;
+zeta = .5;  
+b = 2*zeta*wn*l_nom*m/r_nom;
 alpha = r_nom / (m * l_nom);
-b = 10;
 
 % plant
 Pt = 1/s^2;
 Pm = -2*k*alpha / (s^2 + 2*k*alpha + s*b*alpha);
 P = Pt*Pm;
 
-control = 3
+control = 3;
 switch control
     case 1 % PID
         kp = 1;
@@ -37,23 +39,13 @@ switch control
 
     case 3 % PD + lead
         % PD
-        zero = 0.1;
-        kd = .01;
+        zero = .01;
+        kd = 0.1;
         kp = kd * zero;
         CPD = -kd * (kp/kd + s);
-        % lead
-        % spread = 14;
-        % wL = 0.1;
-        % aL = wL/sqrt(spread);
-        % bL = spread*aL;
-        % aL = .01;
-        % bL = 1;
-        % CL = bL / aL * (s + aL) / (s + bL);
         C = CPD;
-        figure;
-        bode(C)
-        title("Controller")
+        % C = -1;
         figure;
         margin(P*C)
-
+        prepBodePresentation(gcf)
 end

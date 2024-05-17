@@ -1,29 +1,41 @@
+% Magneto Attitude Propulsion
+% Initialize Simulation
+% Cyrus Nolan
+% May 2024
+
 clc
 clear
 close all
 
 %%
-% BEGIN USER INPUT-----------------------------
-% model = "dynamics";
-% next step: plot phi on tether length plot to see if tether length long
-% where I want it.
-model = "dynamics_with_control";
-mu = 3.986e14;
-p0 = 100;
-kp_M = .1;
-zero_loc_M = .023;
-k_tether = 10;
-b_tether = 10;
-k_truss = 10;
-b_truss = 10;
-k_safety = .1;
-b_safety = 10;
+%%%%%%% BEGIN USER INPUT
+% spacecraft
+tether_stiffness_coeff = 10;
+tether_damping_coeff = 27;
+truss_stiffness_coeff = 10;
+truss_damping_coeff = 10;
+safety_stiffness_coeff = .1;
+safety_damping_coeff = 10;
+retracted_tether_length = 100;
 truss_length = 250;
-payload_radius = 500;
-tether_delta = 4;
-mass_payload = 1500;
-mass_truss = 10;
-omega0 = -0.007;
+truss_mass = 10;
+module_height = 500;
+module_mass = 34.5;
+spin_angular_velocity = -0.007;
+
+% controllers
+% angular momentum
+% kp_amc = .0001;
+kp_amc = 0.1;
+zero_loc_amc = .023;
+amc_on_time = 0;
+% tether length
+kd_tl = -0.1;
+zero_loc_tl = 0.01;
+tether_delta = 5;
+
+% orbit
+mu = 3.986e14;
 semi_major_axis = 6878e3;
 eccentricity = 0;
 inclination = pi/2;
@@ -31,14 +43,17 @@ arugment_of_periapsis = 0;
 lon_ascending_node = pi;
 true_anomaly = pi/2;
 orbit_period = 2*pi*sqrt(semi_major_axis^3/mu);
-% sim_stop_time = 1*orbit_period;
-sim_stop_time = 3000;
-% END USER INPUT--------------------------------
+
+% misc
+model = "dynamics_with_control";
+% sim_stop_time = 3*orbit_period;
+sim_stop_time = 2000;
+%%%%%%% END USER INPUT
 
 % initialize parameters
-p = parameters(mu, k_tether, b_tether, k_truss, b_truss, k_safety, b_safety, ...
-    truss_length, payload_radius, mass_payload, mass_truss, omega0, tether_delta, ...
-    kp_M, zero_loc_M, p0);
+p = parameters(mu, tether_stiffness_coeff, tether_damping_coeff, truss_stiffness_coeff, truss_damping_coeff, safety_stiffness_coeff, safety_damping_coeff, ...
+    truss_length, module_height, module_mass, truss_mass, spin_angular_velocity, tether_delta, ...
+    kp_amc, zero_loc_amc, retracted_tether_length, kd_tl, zero_loc_tl, amc_on_time);
 
 % initialize orbit
 o = orbit(mu,semi_major_axis,eccentricity,inclination, ...

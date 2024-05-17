@@ -4,7 +4,7 @@ function limits = getAxisLimits3(data)
     arguments
         data (:,3) {mustBeNumeric, mustBeReal}
     end
-    buffer = .05;
+    buffer = .1;
     xmin = min(data(:,1)) - buffer*range(data(:,1));
     xmax = max(data(:,1)) + buffer*range(data(:,1));
     ymin = min(data(:,2)) - buffer*range(data(:,2));

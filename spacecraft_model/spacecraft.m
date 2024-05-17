@@ -42,8 +42,11 @@ classdef spacecraft
                 "p0 = "+obj.p.p0+"; " + newline + ...
                 "ls0 = "+obj.p.ls0+"; " + newline + ...
                 "w = "+obj.p.w+"; " + newline + ...
-                "kp_M = "+obj.p.kp_M+"; " + newline + ...
-                "ki_M = "+obj.p.ki_M+"; " + newline + ...
+                "kp_amc = "+obj.p.kp_amc+"; " + newline + ...
+                "ki_amc = "+obj.p.ki_amc+"; " + newline + ...
+                "amc_on_time = "+obj.p.amc_on_time+"; " + newline + ...
+                "kp_tl = "+obj.p.kp_tl+"; " + newline + ...
+                "kd_tl = "+obj.p.kd_tl+"; " + newline + ...
                 "mu = "+obj.p.mu+"; " + newline + ...
                 "mp = "+obj.p.mp+"; " + newline + ...
                 "mp_inv = "+1/obj.p.mp+"; " + newline + ...
@@ -60,7 +63,7 @@ classdef spacecraft
                 "NVfo0 = "+mat2str(obj.NX.NVfo0)+"; " + newline + ...
                 "NVgo0 = "+mat2str(obj.NX.NVgo0)+"; " + newline + ...
                 "NVdo0 = "+mat2str(obj.NX.NVdo0)+"; " + newline + ...
-                "NVeo0 = "+mat2str(obj.NX.NVeo0)+"; ";                     
+                "NVeo0 = "+mat2str(obj.NX.NVeo0)+"; ";                   
             load_system(model)
             set_param(model, 'PreloadFcn', preloadFcn);
             postloadFcn = "StopTime = "+stopTime+"; ";
@@ -109,6 +112,26 @@ classdef spacecraft
             idx_lh = find(diff0Cond);
         end
 
+        function [NRGo, NVGo] = getCG(obj)
+            NRao = obj.simout.NRao;
+            NRbo = obj.simout.NRbo;
+            NRfo = obj.simout.NRfo;
+            NRgo = obj.simout.NRgo;
+            NRdo = obj.simout.NRdo;
+            NReo = obj.simout.NReo;
+            NVao = obj.simout.NVao;
+            NVbo = obj.simout.NVbo;
+            NVfo = obj.simout.NVfo;
+            NVgo = obj.simout.NVgo;
+            NVdo = obj.simout.NVdo;
+            NVeo = obj.simout.NVeo;
+            mp = obj.p.mp;
+            mtr = obj.p.mtr;
+            totalMass = 4*mp + 2*mtr;
+            NRGo = (mp*(NRao + NRbo + NRfo + NRgo) + mtr*(NRdo + NReo))/totalMass;
+            NVGo = (mp*(NVao + NVbo + NVfo + NVgo) + mtr*(NVdo + NVeo))/totalMass;
+        end
+
         function [HGo, HG, Ho] = getAngularMom(obj)
             % HGo = angular momentum of spacecraft center of mass about Earth's center
             % HG = angular momentum of spacecraft about its center of mass
@@ -128,8 +151,7 @@ classdef spacecraft
             NVgo = obj.simout.NVgo;
             NVdo = obj.simout.NVdo;
             NVeo = obj.simout.NVeo;
-            NRGo = (mp*(NRao + NRbo + NRfo + NRgo) + mtr*(NRdo + NReo))/totalMass;
-            NVGo = (mp*(NVao + NVbo + NVfo + NVgo) + mtr*(NVdo + NVeo))/totalMass;
+            [NRGo, NVGo] = getCG(obj);
             NRaG = NRao - NRGo;
             NRbG = NRbo - NRGo;
             NRfG = NRfo - NRGo;
@@ -165,23 +187,7 @@ classdef spacecraft
         end
 
         function [a, e, incl, W] = getOrbitalElements(obj)
-            NRao = obj.simout.NRao;
-            NRbo = obj.simout.NRbo;
-            NRfo = obj.simout.NRfo;
-            NRgo = obj.simout.NRgo;
-            NRdo = obj.simout.NRdo;
-            NReo = obj.simout.NReo;
-            NVao = obj.simout.NVao;
-            NVbo = obj.simout.NVbo;
-            NVfo = obj.simout.NVfo;
-            NVgo = obj.simout.NVgo;
-            NVdo = obj.simout.NVdo;
-            NVeo = obj.simout.NVeo;
-            mp = obj.p.mp;
-            mtr = obj.p.mtr;
-            totalMass = 4*mp + 2*mtr;
-            Nr = (mp*(NRao + NRbo + NRfo + NRgo) + mtr*(NRdo + NReo))/totalMass;
-            Nv = (mp*(NVao + NVbo + NVfo + NVgo) + mtr*(NVdo + NVeo))/totalMass;
+            [Nr, Nv] = getCG(obj);
             mu = obj.p.mu;
             for i = length(Nr):-1:1
                 % angular momentum
@@ -453,7 +459,7 @@ classdef spacecraft
             plot3([NRec(i,1) NRac(i,1)],[NRec(i,2) NRac(i,2)],[NRec(i,3) NRac(i,3)], 'r')
             plot3([NRdc(i,1) NRbc(i,1)],[NRdc(i,2) NRbc(i,2)],[NRdc(i,3) NRbc(i,3)], 'r')
             plot3([NRec(i,1) NRbc(i,1)],[NRec(i,2) NRbc(i,2)],[NRec(i,3) NRbc(i,3)], 'r')
-            plot3([NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)], 'k')
+            plot3([NRdc(i,1) NRec(i,1)],[NRdc(i,2) NRec(i,2)],[NRdc(i,3) NRec(i,3)], 'k-.')
             plot3([NRdc(i,1) NRfc(i,1)],[NRdc(i,2) NRfc(i,2)],[NRdc(i,3) NRfc(i,3)], 'r')
             plot3([NRec(i,1) NRfc(i,1)],[NRec(i,2) NRfc(i,2)],[NRec(i,3) NRfc(i,3)], 'r')
             plot3([NRdc(i,1) NRgc(i,1)],[NRdc(i,2) NRgc(i,2)],[NRdc(i,3) NRgc(i,3)], 'r')
@@ -470,10 +476,10 @@ classdef spacecraft
             set(mp_b, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
             set(mp_f, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
             set(mp_g, 'FaceColor', [0.3010 0.7450 0.9330], 'EdgeColor', 'none', 'FaceLighting', 'gouraud');
-            legend(["Tether with current", '', '', '', "Truss", '', '', '', '', 'Tether without current', '', '', '', 'Payloads'])
-            xlabel("ECI X (m)")
-            ylabel("ECI Y (m)")
-            zlabel("ECI Z (m)")
+            legend(["Main Tether, Carries Current", '', '', '', "Truss", '', '', '', '', 'Safety Tether', '', '', '', 'Modules'])
+            xlabel("meters")
+            ylabel("meters")
+            zlabel("meters")
             prepFigPresentation2(gcf)
             light('Position', [0 -1 0], 'Style', 'infinite');
         end
