@@ -12,10 +12,13 @@ animate(sim1)
 plotTrussLength(sim1)
  
 %% Tether 1
-plotTetherLength(sim1, false)
+plotTetherLength(sim1)
 
 %% Angular Mom 1
 plotAngularMom(sim1)
+
+%% Tracking Error 1
+plotTrackingError(sim1)
 
 %% Orbital Elements 1
 plotOrbitalElements(sim1)

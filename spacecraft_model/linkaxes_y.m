@@ -24,7 +24,7 @@ function linkaxes_y(ax)
         ylim(ax(i), [low, high]);
         Y_ticks = [ymid(i) - tick_range, ymid(i), ymid(i) + tick_range];
         yticks(ax(i), Y_ticks);
-        Y_tick_labels = {"- "+sprintf("%.0f", tick_range), sprintf("%0.3e", ymid(i)),"+ "+sprintf("%.0f", tick_range)};
+        Y_tick_labels = {"- "+sprintf("%.2f", tick_range), sprintf("%0.3e", ymid(i)),"+ "+sprintf("%.2f", tick_range)};
         yticklabels(ax(i), Y_tick_labels);
     end
 end

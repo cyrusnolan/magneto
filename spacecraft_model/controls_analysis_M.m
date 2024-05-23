@@ -5,6 +5,7 @@ k = 10;
 r_nom = 502;
 l_nom = 517;
 wn = 0.75;
+% wn = 0.1;
 m = 2*k/(wn^2)*r_nom/l_nom;
 zeta = .5;  
 b = 2*zeta*wn*l_nom*m/r_nom;
@@ -39,7 +40,7 @@ switch control
 
     case 3 % PD + lead
         % PD
-        zero = .01;
+        zero = .1;
         kd = 0.1;
         kp = kd * zero;
         CPD = -kd * (kp/kd + s);

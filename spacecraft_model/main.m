@@ -9,6 +9,21 @@ close all
 
 %%
 %%%%%%% BEGIN USER INPUT
+% orbit
+mu = 3.986e14;
+semi_major_axis = 6878e3;
+eccentricity = 0;
+inclination = pi/2;
+arugment_of_periapsis = 0;
+lon_ascending_node = pi;
+true_anomaly = pi/2;
+orbit_period = 2*pi*sqrt(semi_major_axis^3/mu);
+
+% misc
+model = "dynamics_with_control";
+sim_stop_time = 1*orbit_period;
+% sim_stop_time = 2000;
+
 % spacecraft
 tether_stiffness_coeff = 10;
 tether_damping_coeff = 27;
@@ -26,28 +41,13 @@ spin_angular_velocity = -0.007;
 % controllers
 % angular momentum
 % kp_amc = .0001;
-kp_amc = 0.1;
+kp_amc = 0.01;
 zero_loc_amc = .023;
 amc_on_time = 0;
 % tether length
 kd_tl = -0.1;
-zero_loc_tl = 0.01;
-tether_delta = 5;
-
-% orbit
-mu = 3.986e14;
-semi_major_axis = 6878e3;
-eccentricity = 0;
-inclination = pi/2;
-arugment_of_periapsis = 0;
-lon_ascending_node = pi;
-true_anomaly = pi/2;
-orbit_period = 2*pi*sqrt(semi_major_axis^3/mu);
-
-% misc
-model = "dynamics_with_control";
-% sim_stop_time = 3*orbit_period;
-sim_stop_time = 2000;
+zero_loc_tl = 0.1;
+tether_delta = 10;
 %%%%%%% END USER INPUT
 
 % initialize parameters

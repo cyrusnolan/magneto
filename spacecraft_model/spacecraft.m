@@ -132,6 +132,16 @@ classdef spacecraft
             NVGo = (mp*(NVao + NVbo + NVfo + NVgo) + mtr*(NVdo + NVeo))/totalMass;
         end
 
+        function [eap, ebp] = getTrackingError(obj)
+            ea = obj.simout.error_a;
+            la = obj.simout.rad;
+            eap = 100*ea./la;
+            eb = obj.simout.error_b;
+            lb = obj.simout.rbd;
+            ebp = 100*eb./lb;
+
+        end
+
         function [HGo, HG, Ho] = getAngularMom(obj)
             % HGo = angular momentum of spacecraft center of mass about Earth's center
             % HG = angular momentum of spacecraft about its center of mass
@@ -211,20 +221,13 @@ classdef spacecraft
         function plotTrussLength(obj)
             t = obj.simout.tout;
             rde = obj.simout.rde;
-            [idx_lv_ab, idx_lh_ab] = lvlh_ab(obj);
-            [idx_lv_fg, idx_lh_fg] = lvlh_fg(obj);
 
             figure;
             hold on
             plot(t, rde)
-            % plot(t(idx_lv_ab), rde(idx_lv_ab), 'ro')
-            % plot(t(idx_lh_ab), rde(idx_lh_ab), 'ko')
-            % plot(t(idx_lv_fg), rde(idx_lv_fg), 'bo')
-            % plot(t(idx_lh_fg), rde(idx_lh_fg), 'mo')
             title("Truss Length vs time")
             xlabel("t (s)")
             ylabel("truss length (m)")
-            % legend('', 'ab vertical', 'ab horizonal', 'fg vertical', 'fg horizontal')
             prepFigPresentation2(gcf)
         end
 
@@ -234,8 +237,6 @@ classdef spacecraft
                 singleFig logical=true
             end
             t = obj.simout.tout;
-            [idx_lv_ab, idx_lh_ab] = lvlh_ab(obj);
-            [idx_lv_fg, idx_lh_fg] = lvlh_fg(obj);
             
             if singleFig
                 figure;
@@ -252,17 +253,17 @@ classdef spacecraft
                 hold on
                 grid on
             else
-                figure;
+                figure(1);
                 ax11 = axes;
                 hold on
                 grid on
-                figure;
+                figure(2);
                 ax12 = axes;
                 hold on
-                figure;
+                figure(3);
                 ax21 = axes;
                 hold on
-                figure;
+                figure(4);
                 ax22 = axes;
                 hold on
             end
@@ -270,115 +271,183 @@ classdef spacecraft
             % mass a
             plot(ax11, t, obj.simout.rad, 'k')
             plot(ax11, t, obj.simout.rae, 'r--')
-            % plot(ax11, t(idx_lv_ab), obj.simout.rad(idx_lv_ab), 'ro')
-            % plot(ax11, t(idx_lh_ab), obj.simout.rad(idx_lh_ab), 'ko')
-            title(ax11, "mass a")
+            title(ax11, "module a")
             xlabel(ax11, "time (hours)")
             ylabel(ax11, "tether length (m)")
-            legend(ax11, "Tether one","Tether two")%,"Local vertical","Local horizontal")
+            legend(ax11, "tether one","tether two")
             ax11.XTick = 0:1/4*60*60:max(ax11.XLim);
             ax11.XTickLabel = ax11.XTick/(60*60);
-            xlim([min(t), max(t)]);
+            xlim(ax11,[min(t), max(t)]);
             
             % mass b
             plot(ax12, t, obj.simout.rbd, 'k')
             plot(ax12, t, obj.simout.rbe, 'r--')
-            % plot(ax12, t(idx_lv_ab), obj.simout.rbd(idx_lv_ab), 'ro')
-            % plot(ax12, t(idx_lh_ab), obj.simout.rbd(idx_lh_ab), 'ko')
-            title(ax12, "mass b")
-            xlabel(ax12, "t (s)")
+            title(ax12, "module b")
+            xlabel(ax12, "time (hours)")
             ylabel(ax12, "tether length (m)")
-            legend(ax12, "tether one","tether two")%,"local vertical","local horizontal")
+            legend(ax12, "tether one","tether two")
+            ax12.XTick = 0:1/4*60*60:max(ax12.XLim);
+            ax12.XTickLabel = ax12.XTick/(60*60);
+            xlim(ax12,[min(t), max(t)]);
 
-            % mass f
+            % mass m
             plot(ax21, t, obj.simout.rfd, 'k')
             plot(ax21, t, obj.simout.rfe, 'r--')
-            % plot(ax21, t(idx_lv_fg), obj.simout.rfd(idx_lv_fg), 'ro')
-            % plot(ax21, t(idx_lh_fg), obj.simout.rfd(idx_lh_fg), 'ko')
-            title(ax21, "mass f")
-            xlabel(ax21, "t (s)")
+            title(ax21, "module m")
+            xlabel(ax21, "time (hours)")
             ylabel(ax21, "tether length (m)")
-            legend(ax21, "tether one","tether two")%,"local vertical","local horizontal")
+            legend(ax21, "tether one","tether two")
+            ax21.XTick = 0:1/4*60*60:max(ax21.XLim);
+            ax21.XTickLabel = ax21.XTick/(60*60);
+            xlim(ax21,[min(t), max(t)]);
 
-            % mass g
+            % mass n
             plot(ax22, t, obj.simout.rgd, 'k')
             plot(ax22, t, obj.simout.rge, 'r--')
-            % plot(ax22, t(idx_lv_fg), obj.simout.rgd(idx_lv_fg), 'ro')
-            % plot(ax22, t(idx_lh_fg), obj.simout.rgd(idx_lh_fg), 'ko')
-            title(ax22, "mass g")
-            xlabel(ax22, "t (s)")
-            ylabel(ax22, "tether length (m)")
-            legend(ax22, "tether one","tether two")%,"local vertical","local horizontal")
+            title(ax22, "module n")
+            xlabel(ax22, "time (hours)")
+            ylabel(ax22, "Tether Length (m)")
+            legend(ax22, "tether one","tether two")
+            ax22.XTick = 0:1/4*60*60:max(ax22.XLim);
+            ax22.XTickLabel = ax22.XTick/(60*60);
+            xlim(ax22,[min(t), max(t)]);
+
+            prepFigPresentation(gcf)
+        end
+
+        function plotTrackingError(obj)
+            [eap, ebp] = getTrackingError(obj);
+            t = obj.simout.tout;
+
+            figure;
+            subplot(2,1,1)
+            plot(t,eap);
+            title("Module A Tracking Error")
+            ylabel("percent error")
+            ax = gca;
+            ax.XTick = 0:1/4*60*60:max(ax.XLim);
+            ax.XTickLabel = ax.XTick/(60*60);
+
+            subplot(2,1,2)
+            plot(t,ebp);
+            title("Module B Tracking Error")
+            xlabel("time (hours)")
+            ylabel("percent error")
+            ax = gca;
+            ax.XTick = 0:1/4*60*60:max(ax.XLim);
+            ax.XTickLabel = ax.XTick/(60*60);
+            prepFigPresentation(gcf);
+
         end
 
         function plotAngularMom(obj)
             t = obj.simout.tout;
             [HGo, HG, Ho] = getAngularMom(obj);
+            total_mass = 4*obj.p.mp + 2*obj.p.mtr;
+
+            figure;
+            plot(t, HG(:,2))
+            title("Spin Angular Momentum")
+            grid on
+            xlabel("time (hours)")
+            ylabel("$kg*m^2/s$");
+            ax = gca;
+            ax.XTick = 0:1/4*60*60:max(ax.XLim);
+            ax.XTickLabel = ax.XTick/(60*60);
+            xlim([min(t), max(t)]);
+            linkaxes_y(ax)
+            prepFigPresentation(gcf)
+            ax.InnerPosition = [0.17,0.11,0.75,0.815];
+            
             
             figure;
-            sgtitle("Change in Orbital Angular Momentum")
-            for i = 3:-1:1
-                spf1(i) = subplot(3,1,i);
-                plot(t, HGo(:,i))
-                grid on
-                xlabel("time (s)")
-                ylabel("kg*m^2/s");
-                if i == 1
-                    text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
-                    spf1(i).XTickLabels = {};
-                elseif i == 2
-                    text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
-                    spf1(i).XTickLabels = {};
-                elseif i == 3
-                    text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
-                    xlabel(spf1(i), "time (s)");
-                end
-            end
-            linkaxes_y(spf1);
-            prepFigPresentation2(gcf)
+            plot(t, HGo(:,2)./total_mass)
+            title("Orbital Angular Momentum")
+            grid on
+            xlabel("time (hours)")
+            ylabel("$m^2/s$");
+            ax = gca;
+            ax.XTick = 0:1/4*60*60:max(ax.XLim);
+            ax.XTickLabel = ax.XTick/(60*60);
+            xlim([min(t), max(t)]);
+            linkaxes_y(ax)
+            prepFigPresentation(gcf)
+            ax.InnerPosition = [0.17,0.11,0.75,0.815];
 
-            figure;
-            sgtitle("Spacecraft Spin Angular Momentum")
-            for i = 3:-1:1
-                spf2(i) = subplot(3,1,i);
-                plot(t, HG(:,i))
-                grid on
-                ylabel("kg*m^2/s");
-                if i == 1
-                    text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
-                    spf2(i).XTickLabels = {};
-                elseif i == 2
-                    text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
-                    spf2(i).XTickLabels = {};
-                elseif i == 3
-                    text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
-                    xlabel(spf2(i), "time (s)");
-                end
-            end
-            linkaxes_y(spf2);
-            prepFigPresentation2(gcf)
-
-            figure;
-            sgtitle("Total Angular Momentum")
-            for i = 3:-1:1
-                spf3(i) = subplot(3,1,i);
-                plot(t, Ho(:,i))
-                grid on
-                xlabel("time (s)")
-                ylabel("kg*m^2/s");
-                if i == 1
-                    text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
-                    spf3(i).XTickLabels = {};
-                elseif i == 2
-                    text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
-                    spf3(i).XTickLabels = {};
-                elseif i == 3
-                    text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
-                    xlabel(spf3(i), "time (s)");
-                end
-            end
-            linkaxes_y(spf3);
-            prepFigPresentation2(gcf)
+        %     figure;
+        %     sgtitle("Change in Orbital Angular Momentum")
+        %     for i = 3:-1:1
+        %         spf1(i) = subplot(3,1,i);
+        %         plot(t, HGo(:,i))
+        %         grid on
+        %         xlabel("time (s)")
+        %         ylabel("kg*m^2/s");
+        %         if i == 1
+        %             text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
+        %             spf1(i).XTickLabels = {};
+        %             xlim([min(t), max(t)]);
+        %         elseif i == 2
+        %             text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
+        %             spf1(i).XTickLabels = {};
+        %             xlim([min(t), max(t)]);
+        %         elseif i == 3
+        %             text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
+        %             xlabel(spf1(i), "time (hours)");
+        %             spf1(i).XTick = 0:1/4*60*60:max(spf1(i).XLim);
+        %             spf1(i).XTickLabel = spf1(i).XTick/(60*60);
+        %             xlim([min(t), max(t)]);
+        %         end
+        %     end
+        %     linkaxes_y(spf1);
+        %     prepFigPresentation2(gcf)
+        % 
+        %     figure;
+        %     sgtitle("Spacecraft Spin Angular Momentum")
+        %     for i = 3:-1:1
+        %         spf2(i) = subplot(3,1,i);
+        %         plot(t, HG(:,i))
+        %         grid on
+        %         ylabel("kg*m^2/s");
+        %         if i == 1
+        %             text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
+        %             spf2(i).XTickLabels = {};
+        %             xlim([min(t), max(t)]);
+        %         elseif i == 2
+        %             text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
+        %             spf2(i).XTickLabels = {};
+        %             xlim([min(t), max(t)]);
+        %         elseif i == 3
+        %             text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
+        %             xlabel(spf2(i), "time (hours)");
+        %             spf2(i).XTick = 0:1/4*60*60:max(spf2(i).XLim);
+        %             spf2(i).XTickLabel = spf2(i).XTick/(60*60);
+        %             xlim([min(t), max(t)]);
+        %         end
+        %     end
+        %     linkaxes_y(spf2);
+        %     prepFigPresentation2(gcf)
+        % 
+        %     figure;
+        %     sgtitle("Total Angular Momentum")
+        %     for i = 3:-1:1
+        %         spf3(i) = subplot(3,1,i);
+        %         plot(t, Ho(:,i))
+        %         grid on
+        %         xlabel("time (s)")
+        %         ylabel("kg*m^2/s");
+        %         if i == 1
+        %             text(0.9, 0.1, "ECI X", 'Units', 'normalized', 'FontSize', 16)
+        %             spf3(i).XTickLabels = {};
+        %         elseif i == 2
+        %             text(0.9, 0.1, "ECI Y", 'Units', 'normalized', 'FontSize', 16)
+        %             spf3(i).XTickLabels = {};
+        %         elseif i == 3
+        %             text(0.9, 0.1, "ECI Z", 'Units', 'normalized', 'FontSize', 16)
+        %             xlabel(spf3(i), "time (s)");
+        %         end
+        %     end
+        %     linkaxes_y(spf3);
+        %     prepFigPresentation2(gcf)
         end
 
         function plotOrbitalElements(obj)
